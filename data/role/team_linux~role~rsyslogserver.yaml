@@ -1,0 +1,8 @@
+---
+#team_linux::rsyslogsize: '500G'
+team_linux::local0_filter:
+  - 'Oracle Audit'
+  - 'Deep Security Manager'
+  - 'Deep Security Agent'
+
+team_linux::rsyslog_maxmsgsz: '64k'

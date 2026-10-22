@@ -1,0 +1,13 @@
+---
+team_linux::profile::netmounts:
+  mountpoints:
+    - '/interfaces/splunk-configs'
+  owner: splunk
+  group: splunk
+  mode: '0755'
+  mounts:
+    '/interfaces/splunk-configs':
+      ensure:  mounted
+      fstype:  'nfs'
+      device:  'ffsp1010.cak-bz.local:/splunk-configs'
+      options: 'rw,noatime,auto,vers=3,sec=sys'

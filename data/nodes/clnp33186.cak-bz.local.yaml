@@ -1,0 +1,2 @@
+---
+team_linux::nonrepopkgs_exclude: 'gpg-pubkey|zabbix-agent|katello|puppet-agent|openvox-agent|splunkforwarder|novell-|netiq-|liblog4cxx|nam-|mag-files|redis|nici|nici64|ds_agent|qualys-'

@@ -1,0 +1,9 @@
+team_linux::joinad: false
+team_linux::ipaclient: false
+team_linux::resolveconf: false
+team_linux::mghostsf: false
+
+team_linux::packages:
+  git:
+
+#team_linux::qualysthreads: '7'

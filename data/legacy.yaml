@@ -1,0 +1,30 @@
+########################################
+# Global local accounts not running a 
+#   service and used before IdM/IPA
+########################################
+team_linux::localserviceaccounts_legacy:
+  oldhomedir:
+  ansible-beheer:
+  sa-nessus-rap-linux:
+  qualysscan:
+  ansible-dba:
+  # splunk: # only in role team_splunk::role::splunkhiera (& legacy Puppet code)
+  #           also node/role yaml's in splunkuniversalforwarder/data/...
+
+# Corresponding SSH access:
+team_linux::ssh_svcaccounts:
+  - 'sa-nessus-rap-linux' # to be replaced ....
+  - 'ansible-beheer' # to be moved to legacy.yaml
+  - 'qualysscan'
+  - 'ansible-dba'
+
+########################################
+# HBAC for global non-personal accounts 
+#   used before IdM/IPA
+########################################
+team_linux::ssh_svcaccounts_legacy:
+#  - 'sa-nessus-scan-linux' # obsolete, no longer required
+  - 'sa-nessus-rap-linux' # to be replaced, or removed when obsolete
+  - 'ansible-beheer'
+  - 'qualysscan'
+  - 'ansible-dba' 

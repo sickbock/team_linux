@@ -1,0 +1,29 @@
+---
+team_linux::localserviceaccounts:
+  novlwww:
+  novlua:
+
+team_linux::ssh_groups:
+  - 'g-mg-as-4'
+
+# Temporary personal access:
+team_linux::ssh_access:
+  - 'admrtuit'
+
+team_linux::rsyslog_msgfilter:
+  skip_novell_httpd: "$programname contains 'httpd'"
+
+#team_linux::auditd_rules:
+#  'linux_000000':
+#    - '# host specific rules that need to come first (e.g. never before always)'
+#    - '-a exit,never -F dir=/opt/novell/eDirectory/lib64/ -k exclude'
+#    - '-a exit,never -F path=/opt/novell/eDirectory/lib64/liblber-2.4.so.2 -k exclude'
+#    - '-a exit,never -F dir=/run/systemd/ask-password-block/ -k exclude'
+#
+#team_linux::auditd_msgfilter:
+#  skip_novell_rhsmcertd: '-a exclude,always -F subj_type=rhsmcertd_t -F msgtype=AVC'
+
+team_linux::zabbix_userparams:
+  custom.novellNLDAPsdk: 'sudo /usr/lib/zabbix/externalscripts/check_novellib.sh'
+
+team_linux::nonrepopkgs_exclude: 'katello-ca-consumer-.*.cak-bz.local|gpg-pubkey|zabbix-agent|puppet-agent|openvox-agent|splunkforwarder|novell-|netiq-|liblog4cxx|nam-|mag-files|redis|nici|nici64|patterns-edirectory|edirectory-rhel|unixODBC|ds_agent|qualys-'

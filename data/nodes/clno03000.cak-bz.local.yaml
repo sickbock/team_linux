@@ -1,0 +1,3 @@
+---
+team_linux::root_login: true
+team_linux::puppetagent_runtimeout: '7200'

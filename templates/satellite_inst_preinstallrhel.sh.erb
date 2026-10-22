@@ -1,0 +1,23 @@
+#!/usr/bin/bash
+
+OSRELEASE=$(cat /etc/redhat-release)
+NAMEANDMAJOR=${OSRELEASE%.*}
+MAJORRELEASE=${NAMEANDMAJOR##* }
+
+touch /var/log/preinstall.log
+
+case ${MAJORRELEASE} in 
+ 8)
+  curl -k https://satellite.cak-bz.local/pub/install/preinstallrhel8.sh|bash 
+  ;;
+ 9)
+  curl -k https://satellite.cak-bz.local/pub/install/preinstallrhel9.sh|bash -x > /var/log/preinstall_$$.log 2>&1
+  ;;
+ 10)
+  curl -k https://satellite.cak-bz.local/pub/install/preinstallrhel10.sh|bash -x > /var/log/preinstall_$$.log 2>&1
+  ;;
+ *)
+  echo "Unknown Operating System" >> /etc/motd
+  ;;
+esac
+

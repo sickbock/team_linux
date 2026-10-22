@@ -1,0 +1,8 @@
+---
+team_linux::ipaclient: true
+team_linux::joinad: false
+#team_linux::root_login: true # may be required during e.g. AAP installation
+
+# needed for at least AAP database:
+team_linux::packages:
+  postgresql-contrib:

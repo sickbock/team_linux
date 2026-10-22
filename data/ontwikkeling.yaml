@@ -1,0 +1,22 @@
+---
+team_linux::joinad: false
+team_linux::ipaclient: true
+
+team_linux::puppetagent_runinterval: '1800'
+team_linux::mghostsf: true
+team_linux::resolveconf: true
+
+#team_linux::zabbix_ip: '172.25.168.2'
+#team_linux::zabbix_url: 'clnp33337.cak-bz.local'
+
+##team_linux::dsmanager: 'clna22820.cak-bz.local' # on premise
+## vs SaaS:
+#team_linux::dsmanager: 'agents.workload.de-1.cloudone.trendmicro.com'
+#team_linux::dsmurl: 'dsmUrl=.*trendmicro.com'
+#team_linux::dsmport: '443'
+#team_linux::ds_agent_options: '"tenantID:F1357C2B-C7B0-6A83-2482-4B73DC079B00" "token:B33D62C8-F5C6-0038-B02F-6F4865DBDBDF" "policyid:36" "groupid:34"'
+#
+
+#team_linux::ds_agent_version: '20.0.0-1337.el8'
+#team_linux::installdsa: true
+

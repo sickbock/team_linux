@@ -1,0 +1,8 @@
+---
+team_linux::localserviceaccounts:
+  novldsg:
+
+team_linux::ssh_groups:
+  - 'g-mg-as-4'
+
+team_linux::nonrepopkgs_exclude: 'katello-ca-consumer-.*.cak-bz.local|gpg-pubkey|zabbix-agent|puppet-agent|openvox-agent|splunkforwarder|nici64|ds_agent|qualys-'

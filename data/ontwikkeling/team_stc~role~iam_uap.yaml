@@ -1,0 +1,27 @@
+---
+team_linux::ssh_groups:
+  - 'g-mg-iam-ont-uap'
+
+team_linux::sudocmd:
+  '%g-mg-iam-ont-uap':
+    'root':
+      - '/etc/init.d/idmapps_tomcat_init start'
+      - '/etc/init.d/idmapps_tomcat_init restart'
+      - '/etc/init.d/idmapps_tomcat_init stop'
+      - '/etc/init.d/idmapps_tomcat_init condrestart'
+      - '/etc/init.d/postgres1-9.3 start'
+      - '/etc/init.d/postgres1-9.3 restart'
+      - '/etc/init.d/postgres1-9.3 stop'
+      - '/etc/init.d/postgres1-9.3 condrestart'
+      - '/etc/init.d/postgres1-9.3 status'
+  'novlua':
+    'root':
+      - '/etc/init.d/idmapps_tomcat_init start'
+      - '/etc/init.d/idmapps_tomcat_init restart'
+      - '/etc/init.d/idmapps_tomcat_init stop'
+      - '/etc/init.d/idmapps_tomcat_init condrestart'
+      - '/etc/init.d/postgres1-9.3 start'
+      - '/etc/init.d/postgres1-9.3 restart'
+      - '/etc/init.d/postgres1-9.3 stop'
+      - '/etc/init.d/postgres1-9.3 condrestart'
+      - '/etc/init.d/postgres1-9.3 status'

@@ -1,0 +1,12 @@
+#!/usr/bin/bash
+
+PID=$(/usr/sbin/pidof /opt/ds_agent/ds_agent)
+
+if [ "X${PID}" != "X" ]; then
+ echo running 
+ exit 0
+else
+ LOCALCONN=$(/opt/ds_agent/sendCommand --get GetConfiguration | /usr/bin/egrep -i "::1:4118|127.0.0.1:4118")
+  [[ "${LOCALCONN}" != "" ]] && { echo "active (not)" ; exit 0 ; }
+fi
+

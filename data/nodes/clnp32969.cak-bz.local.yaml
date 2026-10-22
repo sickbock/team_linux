@@ -1,0 +1,6 @@
+---
+team_linux::nonrepopkgs_exclude: 'gpg-pubkey|katello-ca-consumer-.*.cak-bz.local|puppet-agent|openvox-agent|zabbix-agent2|ds_agent|gitlab-ce|qualys-'
+team_linux::httpproxyserver: false
+team_linux::szgitlabvar: '39G'
+
+#team_linux::qualysthreads: '7'

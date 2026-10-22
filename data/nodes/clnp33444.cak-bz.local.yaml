@@ -1,0 +1,5 @@
+---
+team_linux::root_login: true
+
+team_linux::root_localservice_keys:
+  - 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOxCKZwR+CFJ4YQx+Vc/SE9QotchiTQqvC1xddnWDpIc root@clnp33446'

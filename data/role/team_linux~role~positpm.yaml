@@ -1,0 +1,14 @@
+---
+team_linux::positwbuser: 'posit'
+team_linux::positwbgroup: 'pg-mg-posit-users@ipaprod.hetcak.nl'
+team_linux::localserviceaccounts:
+  posit:
+
+team_linux::packages:
+  binutils:
+  git:
+  java-21-openjdk:
+
+team_linux::nonrepopkgs_exclude: 'gpg-pubkey|katello-ca-consumer-.*.cak-bz.local|puppet-agent|openvox-agent|zabbix-agent2|ds_agent|splunk|rstudio-pm|qualys-'
+
+

@@ -1,0 +1,16 @@
+# filter out unwanted messages
+# Notes: 
+#   - before RHEL 7, the "~" was used instead of stop
+#   - legacy syntax is "if ... then stop
+#   - new syntax?
+<% @syslog_filter.keys.sort.each do |filter| -%>
+if <%= @syslog_filter[filter] %> then stop
+<% end -%>
+
+<% if @syslog_prog -%>
+<% @syslog_prog.each do |prog| -%>
+if $syslogfacility-text == 'local0' and $msg contains '<%= prog %>' then /var/log/<%= prog.gsub(' ','_') %> 
+& stop
+<% end -%>
+<% end -%>
+

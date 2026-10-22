@@ -1,0 +1,15 @@
+---
+team_linux::joinad: false
+team_linux::ipaclient: true
+
+team_linux::puppetagent_runinterval: '1500'
+team_linux::mghostsf: true
+team_linux::resolveconf: true
+
+#Tijdelijk: Moet straks otap overstijgend:
+team_linux::installqlsagent: true
+
+
+#team_linux::ds_agent_version: '20.0.0-1337.el8'
+#team_linux::installdsa: true
+

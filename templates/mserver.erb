@@ -1,0 +1,32 @@
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Provides:          Automator Modeling Server wrapper
+# Required-Start:    
+# Required-Stop:     
+# Default-Start:     2 3 4 5
+# Default-Stop:      S 0 1 6
+# Short-Description: This service manages the opsmserver daemon 
+# Description:       Modeling Server is a very scalable solution for scheduling jobs. 
+### END INIT INFO
+
+MSERVER=<%= @mpdata %>/MServer_10500/bin/mserver.service
+[[ -x ${MSERVER} ]] || { echo "${MSERVER} not found" ; exit 1 ; }
+
+case $1 in
+  start)
+    /usr/bin/su - <%= @mpowner %> -s /bin/bash -c "${MSERVER} start"
+    ;;
+  stop)
+    /usr/bin/su - <%= @mpowner %> -s /bin/bash -c "${MSERVER} stop"
+    ;;
+  status)
+    /usr/bin/su - <%= @mpowner %> -s /bin/bash -c "${MSERVER} status"
+    ;;
+  restart)
+    /usr/bin/su - <%= @mpowner %> -s /bin/bash -c "${MSERVER} stop"
+    sleep 1
+    /usr/bin/su - <%= @mpowner %> -s /bin/bash -c "${MSERVER} start"
+    ;;
+esac
+

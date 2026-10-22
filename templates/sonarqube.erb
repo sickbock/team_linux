@@ -1,0 +1,28 @@
+#  systemd configuration for sonarqube to be installed in:
+#  	/opt/sonarqube/sonarqube (symbolic link to latest version)
+#
+ 
+[Unit]
+Description=Start Sonarqube
+Documentation=https://docs.sonarqube.org/latest/setup/install-server/#
+ConditionPathExists=/opt/sonarqube/sonarqube/bin/linux-x86-64/sonar.sh
+After=syslog.target network.target
+ 
+[Service]
+Type=simple
+User=sonar
+Group=sonar
+PIDFile=/var/lib/sonarqube/sonarqube.pid
+PermissionsStartOnly=true
+ExecStart=/opt/sonarqube/sonarqube/bin/linux-x86-64/sonar.sh console
+ExecReload=/opt/sonarqube/sonarqube/bin/linux-x86-64/sonar.sh restart
+ExecStop=/opt/sonarqube/sonarqube/bin/linux-x86-64/sonar.sh stop
+StandardOutput=syslog
+LimitNOFILE=65536
+LimitNPROC=8192
+TimeoutStartSec=50
+Restart=always
+ 
+[Install]
+WantedBy=multi-user.target
+

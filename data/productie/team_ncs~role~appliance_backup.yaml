@@ -1,0 +1,5 @@
+---
+team_linux::sudocmd:
+  '%g-mg-l-network-admins-p':
+    'root':
+      - '/sbin/tcpdump'

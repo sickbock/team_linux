@@ -1,0 +1,3 @@
+---
+team_linux::nonrepopkgs_exclude: '|pg-pubkey|zabbix-agent|katello-ca-consumer-.*.cak-bz.local|puppet-agent|openvox-agent|splunkforwarder|emcdbappagent|powerprotect-agentsvc|ds_agent|ddboostfs|qualys-|unixODBC-devel|mssql-tools18|msodbcsql18'
+team_linux::puppetagent_runtimeout: '7200'

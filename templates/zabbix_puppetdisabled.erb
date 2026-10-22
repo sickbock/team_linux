@@ -1,0 +1,3 @@
+#/bin/bash
+
+(test -f /opt/puppetlabs/puppet/cache/state/agent_disabled.lock && cat /opt/puppetlabs/puppet/cache/state/agent_disabled.lock | cut -d\" -f4) || echo "enabled"

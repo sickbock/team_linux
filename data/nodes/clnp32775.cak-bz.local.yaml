@@ -1,0 +1,39 @@
+---
+team_linux::joinad: false
+team_linux::ipaclient: true
+
+team_linux::packages:
+  php-mysqlnd:
+
+team_linux::localserviceaccounts:
+  apache:
+
+team_linux::accountdata:
+  apache:
+   sudorules:
+    'root':
+      commands:
+        - '/bin/su -l -s /bin/bash apache'
+        - '/usr/sbin/apachectl'
+        - '/usr/bin/systemctl stop httpd'
+        - '/usr/bin/systemctl start httpd'
+        - '/usr/bin/systemctl restart httpd'
+        - '/usr/bin/systemctl status httpd'
+        - '/usr/bin/systemctl enable httpd'
+        - '/usr/bin/systemctl is-enabled httpd'
+        - '/usr/bin/systemctl disable httpd'
+        - '/usr/sbin/restorecon -Rv /etc/httpd'
+        - '/usr/sbin/restorecon -Rv /var/www'
+        - '/usr/bin/chown apache\: /var/www/*'
+        - '/usr/bin/mysql_secure_installation'
+        - '/usr/bin/mysql*'
+        - '/usr/bin/systemctl stop mariadb'
+        - '/usr/bin/systemctl start mariadb'
+        - '/usr/bin/systemctl restart mariadb'
+        - '/usr/bin/systemctl status mariadb'
+        - '/usr/bin/systemctl enable mariadb'
+        - '/usr/bin/systemctl is-enabled mariadb'
+        - '/usr/bin/systemctl disable mariadb'
+        - '/usr/sbin/restorecon -Rv /var/lib/mysql'
+        - '/bin/cp /var/tmp/clnp32775.cak-bz.local.key /etc/pki/tls/private/'
+        - '/usr/sbin/restorecon -Rv /etc/pki'

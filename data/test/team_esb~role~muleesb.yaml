@@ -1,0 +1,39 @@
+# re-define AD account & group for Mule/ESB:
+#team_linux::usergroups:
+#  gl-integratie-mft-tst:
+
+#team_linux::localserviceaccounts:
+#  sa-mule-esb-wt:
+
+team_linux::ssh_groups:
+  - 'g-mg-mule-ontwikkelaars'
+  - 'g-mg-mule-beheerders'
+
+#team_linux::team_esb_sudouser: 'sa-mule-esb-wt'
+team_linux::opt_application_user: 'sa-mule-esb-wt'
+team_linux::opt_application_group: 'gl-integratie-mft-tst'
+
+team_linux::sudocmd:
+  'sa-mule-esb-wt':
+    root:
+      - '/usr/bin/nc'
+
+team_linux::ssh_access:
+  - 'sa-mule-esb-wt'
+
+team_linux::accountdata:
+  sa-mule-esb-wt:
+    level: 'localservice'
+    gecos: 'Local copy sa-mule-esb-wt'
+    uid: 10010232
+    groups:
+      - 'gl-integratie-mft-tst'
+    ulimits:
+      - 'sa-mule-esb-wt hard nofile 65536'
+      - 'sa-mule-esb-wt soft nofile 65536'
+      - 'sa-mule-esb-wt hard nproc 16384'
+      - 'sa-mule-esb-wt soft nproc 16384'
+
+team_linux::localserviceaccounts:
+  sa-mule-esb-wt: 
+

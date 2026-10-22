@@ -1,0 +1,53 @@
+#!/bin/bash
+set -x
+SCRIPTNAME=$(basename "$0")
+ADGROUP=${1}
+
+sanitize_input() {
+if [ -z ${ADGROUP} ] ; then
+  echo "no groupname provided"
+  echo "example: ${SCRIPTNAME} <ad_groupname>"
+  exit
+else
+  if [ "${ADGROUP:0:5}" == "g-mg-" ] ; then
+	  IPASHORT="${IPASHORT}"
+    if [ "${ADGROUP:0:7}" == "g-mg-l-" ] ; then
+	  IPASHORT="${ADGROUP#g-mg-l-}"
+    fi
+  else
+  echo "${ADGROUP} does not seem to be a valid AD group (missing g-mg-)"
+  exit
+  fi
+  echo "Short groupname is ${IPASHORT}"
+fi
+}
+
+check_ticket() {
+if ! klist -s ; then
+  echo "kerberos ticket not valid; running kinit"
+  /bin/kinit
+fi
+}
+
+create_groups() {
+klist -s || exit
+getent group ${ADGROUP}@cak-bz.local
+ipa group-add --desc='IPA External group' ${ADGROUP}_external --external
+ipa group-add --desc='IPA Posix group' p${ADGROUP}
+ipa -n group-add-member ${ADGROUP}_external --external ${ADGROUP}@cak-bz.local
+ipa group-add-member p${ADGROUP} --groups ${ADGROUP}_external
+ipa hostgroup-add --desc "${IPASHORT}" ${IPASHORT}
+ipa hbacrule-add "${IPASHORT}" --servicecat=all --desc="Allow access for ${IPASHORT} administrators"
+ipa hbacrule-add-host  "${IPASHORT}" --hostgroup=${IPASHORT}
+ipa hbacrule-add-user ${IPASHORT} --groups=p${ADGROUP}
+ipa sudorule-add "${IPASHORT}" --desc="Sudo rules for ${IPASHORT} Administration"
+ipa sudorule-add-host ${IPASHORT} --hostgroup=${IPASHORT}
+ipa sudorule-add-user ${IPASHORT} --groups=p${ADGROUP}
+ipa sudorule-add-allow-command  ${IPASHORT} --sudocmdgroups=${IPASHORT}
+}
+
+sanitize_input
+check_ticket
+create_groups
+exit 0
+

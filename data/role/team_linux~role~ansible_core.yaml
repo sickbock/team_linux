@@ -1,0 +1,16 @@
+---
+team_linux::auditd_msgfilter:
+  skip_pkginfo: '-a exclude,always -F subj_type=user_home_t -F msgtype=AVC'
+  skip_rhsmcertd: '-a exclude,always -F exe=/usr/libexec/rhsmcertd-worker -F msgtype=AVC'
+
+team_linux::ssh_forwarding: 'yes'
+team_linux::packages:
+  xorg-x11-xauth:
+  code:
+  podman:
+  ansible-core:
+  ansible-navigator:
+  ansible-lint:
+  ansible-builder:
+
+team_linux::installqlsagent: false

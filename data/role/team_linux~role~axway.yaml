@@ -1,0 +1,35 @@
+---
+# nfs mounts
+team_linux::profile::netmounts:
+  mountpoints:
+    - '/media/dba' 
+    - '/orapatch' 
+  owner: root
+  group: root
+  mode: '0770'
+  mounts:
+    '/media/dba':
+      ensure:  mounted
+      fstype:  'nfs'
+      device:  'ffsp1002.cak-bz.local:/software-oracle'
+      options: 'noexec,vers=3,sec=sys'
+    '/orapatch':
+      ensure:  mounted
+      fstype:  'nfs'
+      device:  'ffsp1002.cak-bz.local:/software-orapatch'
+      options: 'user,rw,hard,auto,exec,vers=3,sec=sys'
+
+team_linux::localserviceaccounts:
+  automator:
+
+team_linux::accountdata:
+  automator:
+    sudorules:
+      'ALL':
+        tags: 'NOPASSWD:SETENV:'
+        commands:
+          - '/opt/automator/PServer_10510/bin/opbchusr'
+
+team_linux::packages:
+  zip:
+

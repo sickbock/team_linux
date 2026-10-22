@@ -1,0 +1,7 @@
+---
+team_linux::profile::prepare_pe_master::lvdata: '10G'
+team_linux::profile::prepare_pe_master::lvoptpup: '26G'
+team_linux::profile::prepare_pe_master::lvetcpup: '5G'
+team_linux::profile::prepare_pe_master::lvvarlog: 'lvvarlog'
+team_linux::profile::prepare_pe_master::szvarlog: '5G'
+

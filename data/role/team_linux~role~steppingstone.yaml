@@ -1,0 +1,24 @@
+---
+team_linux::homedisk: '/dev/sdb'
+
+# To drop sessions after timeout:
+# - change following default to yes
+adjoin::params::tcpkeepalive: 'yes'          # default 'yes'
+# - set the following default to some time in seconds or minutes (with m)
+adjoin::params::clientaliveinterval: '0'     # default '0'
+# - set the next to zero
+adjoin::params::clientalivecountmax: '3'     # default '3'
+
+team_linux::ssh_forwarding: 'yes'
+
+team_linux::packages:
+  binutils:
+  python39:
+  git:
+  xorg-x11-xauth:
+  xterm:
+#  firefox:
+
+team_linux::rsyslog_msgfilter:
+  skip_illegal_users: "$msg contains 'error: PAM: Authentication failure for illegal user'"
+  skip_admuser_failure: "$msg contains 'error: PAM: Authentication failure for adm'"

@@ -1,0 +1,6 @@
+---
+team_linux::accountdata:
+  podman:
+    shell: /bin/bash
+
+#team_linux::qualysthreads: '5'

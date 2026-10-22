@@ -1,0 +1,26 @@
+---
+team_linux::localserviceaccounts:
+  sa-mule-aq-wt:
+
+team_linux::ssh_svcaccounts:
+  - 'sa-mule-aq-wt'
+
+team_linux::ssh_groups:
+  - 'g-mg-mule-ontwikkelaars'
+  - 'g-mg-mule-beheerders'
+
+#team_linux::activemq_sudouser: 'sa-mule-aq-wt'
+team_linux::opt_application_user: 'sa-mule-aq-wt'
+team_linux::opt_application_group: 'g-mg-mule-beheerders'
+
+team_linux::sudocmd:
+  'sa-mule-aq-wt':
+    root:
+      - '/bin/systemctl start activemq'
+      - '/bin/systemctl stop activemq'
+      - '/bin/systemctl status activemq'
+      - '/sbin/service activemq start'
+      - '/sbin/service activemq restart'
+      - '/sbin/service activemq stop'
+      - '/sbin/service activemq status'
+

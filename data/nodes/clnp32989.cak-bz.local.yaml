@@ -1,0 +1,7 @@
+---
+team_linux::root_login: true
+
+# remove 'podman* containerd.io runc' from team_linux::dnf_exclude
+#    during install/upgrade:
+#team_linux::dnf_exclude: 'puppet-agent podman* containerd.io runc' # see role yaml intead
+

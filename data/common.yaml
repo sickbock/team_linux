@@ -1,0 +1,1538 @@
+---
+#message: "This node is using Team Linux common data"
+########################################
+# Documentation
+########################################
+# see global common.yaml # team_linux::git_docurl: 'https://git.cak-bz.local/'
+# bring the next parameter is in the team scope
+team_linux::git_docurl: 'https://git.cak-bz.local'
+team_linux::git_group: 'linuxbeheer'
+
+########################################
+# sudo parameter for serviceaccounts
+#   To be removed when sudo.pp retires
+########################################
+team_linux::sudodefaults:
+  zabbix:
+    - '!requiretty'
+
+########################################
+# AD accounts + administrative privileges
+# DO NOT USE FOR service/local account
+########################################
+team_linux::sudo_root:
+  - 'admjpoutre'
+  - 'admroostendorp'
+  - 'admcarlo'
+#  - 'sa-nessus-rap-linux' # obsolete, to be replaced by local reporter
+
+########################################
+# AD accounts with global SSH access
+#   Also 'mortal' with key below:
+#     "data for other remote users"
+# DO NOT USE FOR service/local account
+#   use team_linux::ssh_svcaccounts: 
+########################################
+#team_linux::ssh_access: # retire ssh_access for remaining native AD clients
+#  - 'admmnolles'
+#  - 'admthenczyk'
+#  - 'admdvrouwenfelder'
+##  - 'admrveenstra' # Disabled I2103 1670
+
+########################################
+# non-personal accounts go in here
+# 'sa-nessus-scan-linux' now local acc.
+# NEEDS TO BE MOVED TO IdM/IPA!
+########################################
+#team_linux::ssh_svcaccounts: 
+##  - 'sa-nessus-scan-linux' # obsolete, no longer required
+##  - 'sa-nessus-rap-linux' # to be replaced ....
+#  - 'ansible-beheer' # to be moved to legacy.yaml or IdM
+#  - 'qualysscan' # to be moved to legacy.yaml or IdM
+
+########################################
+# AD accounts with limited SSH access
+# DO NOT USE FOR service/local account
+########################################
+team_linux::dba_ssh_access:
+  - 'admslatinovic'
+  - 'admdgroot'
+  - 'admraukes'
+  - 'admpbulk'
+  - 'admdhendriks'
+  - 'admrbakker'
+  - 'admramankoe'
+
+########################################
+# Administrative privileges (not root)
+#   ONLY RHEL6 & native AD clients
+#   To be removed when sudo.pp retires
+########################################
+team_linux::sudocmd:
+  '%emcadmin':
+    'root':
+      - '/bin/cat /var/log/messages'
+      - '/sbin/pvdisplay'
+      - '/sbin/vgdisplay'
+      - '/sbin/lvdisplay'
+      - '/usr/bin/lsscsi'
+      - '/sbin/pgs'
+      - '/sbin/vgs'
+      - '/sbin/lgs'
+# For Zabbix: system commands/scripts run from Zabbix GUI
+#   for User Parameters see linuxbeheerscripts!
+  'zabbix':
+    'root':
+      - '/sbin/aureport'
+#      - '/usr/bin/yum updateinfo'
+      - '/var/CAK/root/scripts/security'
+      - '/var/CAK/root/scripts/fixsplunk.sh'
+#      - '/usr/bin/yum -y -q --security check-update'
+      - '/usr/lib/zabbix/externalscripts/puppetdisabled.sh'
+      - '/usr/lib/zabbix/externalscripts/dsagentbroken.sh'
+      - '/usr/sbin/subscription-manager status'
+      - '/var/CAK/root/scripts/kerberos.sh'
+#      - '/usr/sbin/ausearch -m USER_LOGIN -sv no -ts *'
+      - '/usr/sbin/ausearch *'
+      - '/usr/lib/zabbix/externalscripts/nodeinfo'
+      - '/sbin/aureport -ts today -i -m --failed'
+      - '/usr/bin/systemctl restart *'
+      - '/usr/bin/journalctl --no-pager -xeu *'
+      - '/usr/bin/dnf *' # clean all, check-update, ..
+      - '/usr/bin/systemctl stop puppet'
+      - '/usr/bin/rm -rf /etc/puppetlabs/puppet/ssl'
+      - '/usr/local/bin/puppet agent -t'
+      - '/usr/bin/rm /var/opt/ds_agent/am/core.*'
+      - '/usr/lib/zabbix/externalscripts/unpackagedkernelmods.sh'
+      - '/usr/local/qualys/cloud-agent/bin/qualys-healthcheck-tool'
+      - '/usr/bin/pkill -9 -f /opt/ds_agent/ds_am'
+      - '/usr/lib/zabbix/externalscripts/puppetdisabled.sh'
+      - '/usr/bin/zabbix_check_puppetstate *'
+      - '/usr/lib/zabbix/externalscripts/zabbix_check_puppetstate *'
+      - '/usr/bin/stat -f -c *'
+      - '/usr/bin/chronyc *'
+      - '/opt/puppetlabs/bin/puppet agent -t'
+  'sa-nessus-rap-linux':
+    'root':
+      - 'ALL'
+  'ansible-beheer':
+    'root':
+      - 'ALL'
+  'bofherd':
+    'root':
+      - 'ALL'
+  'ALL':
+    'root':
+      - '/usr/local/bin/nodeinfo'
+
+########################################
+# Allow root login globally by default
+# Replaced by "bofherd" with sudo rights
+########################################
+team_linux::root_login: false
+
+########################################
+# reporting etc. that needs ssh-root
+########################################
+team_linux::root_localservice_keys:
+  - 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAgEAvAKnxNfy3yQXoCWHdZ5nq8gHHMubVoVW6CNo37HgL/AyR/7n/NnjWHobbCNt/JDlDWtlRg2/VAudUmXMcI42ohrp3ADUmSAuc+HsC2eHIRYDlDvkboD0/ZSKNRWbuMD7lWlSFbKoLww0zm/jo+FbB78qIzVhZ2pkwEVYRTIFYqyxkyQL1pyzN3RrGWqenE85TC9cRwx5sknhE25AqHplEqYnYGRnH/mO+EVtmNF2m0w37kP6WD47LEkahOIveynqpZeMlPwNxoWNZN+qt4hkFcKMZtQmTnEGq/ZU2I+NA7eVZ9GBxC7+wtUIPICBndoO7E1FZe0w9qinEvJyikWAqDDJ7SxGzDsInMY1BNfB8fIlJi0zGIk1GmfvAlV2LIdR0DJUr1K4jm9TmKDOz/KZritGN7cpMQJ0n5X0XxHxixWlw9LsGv3xlbCyUTs7q+OgPFZKX75pI1EiomTveXRhOMGhGKL6Nhlq5VMCItoWYgQMBU4xqPg4d5lYNgU1s70CBhBZZwQhzmjQnQBUEhXZcDDZcVjBK6vJG8DP7zGaE8+JyG2A+kFL9CmHTkKt5pIVnjwIFDkEQP5TDYmsY9ov4uVWxr5J6cDI7924h5BSQxTALQPffb8M24//p9Kb6LidyVpYarcf6je5TwjI+ijtT4MJ7GCXy7aqWYAD8728OIM= SA-NESSUS-RAP-LINUX@clnpmgt1'
+  - 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCZ5k1WJ/bao+3gfevRAQFkKkeotFY+fMVwd5bS0sn3AOGpsKAPnTkjghGbq30qaY6M6PZHTSJrLT1IykA2Zhc09NaAgbfCFQitAITsUpwgygZayWP7LYK2+CJzmkOlG0EkKyPggw3vOfc0NmHzogHVAVYoTOnsuB+gUA+zOGohSn8okCVeakbUgStcPlNPK0BYTa5jjZGeOYtR6baGpmEKUYOPPKWRR6SFq+FUFBpXBZN+eYSqEhcUJfTO9MABNMMlRH6fP2ZDKo0AtO90HJyxDdpEPdSkIvx/I6aM+4zlPs2Fcp6MP7l6nEiTKCkGzmPU1NEajVj0ie7Wk7WE0NRK8z332/boG02lK2v125qlBI6wTB5d9UvK3KUXmwr8wHFap4yp+QE/tMasg1KDEHg6D/CHczc3i7C39sm3W01y0/8fSmii9DA9tK+vJQCmS+ag5+aQIMjdVgnMZ++PXw3tV6wiIpEvqP7LF/Jl6ft2S2gW4toNURQWxD2eFa7ZuFyr67hP1LPn0m994hgHrwBDh2FyOqvS41+h7mXiPQAMcalkTkmur0JsRaBo6ezHnZrl3BKGsJB/G/FerEckJ9DVUlwJFTVYbfG9Iv1qpzwwmKAQ+7wDoI6DvfSpUkbrd10j/2nc7JI+PxhyMQC+lQS08JORSIEkru9jf6T41QM+fw== admjpoutre'
+  - 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAgEAvtn7ewPCaQHvtUtCy9CeuQjzUwrKMKX2814P0lGGjk5tXOg8G1A5b7foOI3iuSVTI9lUzYvKnLNNByTMpHDpSH9F4pon/QLFkN0OLUWKT00d3d6dYfs7VmFb8iJqDPImQPWST40o5Gt65iqr9nHuF4eiJURiOdTQYlsBlSbwt2I93qMGG5NbIoznjxXflBM352/uuAhcPK2xpaLt62XhokPDtOAZ6ibBr1XcZoF2BxvWYFECwBDZA7B6Clw7CDHCTyiVLQNpFwwOh1SIkPhq+J+Z5007FU+YIzttPlF6vy6aqRlGrtb8IQt6IQEZzPmXqnAX40YHg4jQsNVp8b8Z5eEfPE6R4LXWNvnb1axf26rN0QsRt8bzeuejljWngWnQz+vmkNZYSHtuCmUuB4LKMrnU1gbozLWOmNdhVCBvtlbswFuU8oLm5zbUxuR2RjuyGGFrZMKcmZdEtWzMGy0E0exJBpYj66tV/yHWKnrAOx9qcEAnFquTke181k/EO7yFgE0rYipvONDr7eClSyVxfU/9H25SDLteZFPeYgUw1SqemoNkS1EzjvON3O5LxPIkEfufJnLXohn85B4lPGcvJyvWKyG/zseFHnHd7oSjVD3it2Ul4inI6Vu9bJI6uOeb9qa77zpvcF004x6FRekUIRD+D0m0YVy2NdRqh/MKT98= admroostendorp'
+
+########################################
+# Network / servers
+########################################
+# IPA
+team_linux::ipa_domainname: 'ipaprod.hetcak.nl'
+
+# AD:
+team_linux::ad_domain: 'CAK-BZ.LOCAL'
+team_linux::ad_domainname: 'cak-bz.local'
+team_linux::auth_servers:
+  - '172.25.168.3'
+  - '172.25.169.2'
+  - '172.25.169.1'
+  - '172.25.168.102'
+  - '172.25.168.103'
+  - '172.25.168.104'
+
+team_linux::dns_servers:
+  - '172.25.173.1'
+  - '172.25.173.2'
+
+team_linux::satellite_server: 'satellite.prd.sysmgt.func.cak-bz.local'
+team_linux::satellite_organization: 'CAK'
+
+# pool of NTP servers
+team_linux::ntp_servers:
+  - 'ntp1.cak-bz.local'
+  - 'ntp2.cak-bz.local'
+  - 'ntp3.cak-bz.local'
+
+# default resolving options
+team_linux::dns_search: 'cak-bz.local'
+team_linux::dns_timeout: 1
+team_linux::dns_attempts: 1
+team_linux::dns_rotate: false
+
+# Zabbix monitoring
+team_linux::zabbix_old: false
+team_linux::zabbix_agent: 'zabbix-agent2'
+#team_linux::zabbix_ip: '172.25.168.32,172.25.168.2'
+#team_linux::zabbix_url: 'clnp33051.cak-bz.local,clnp33337.cak-bz.local'
+team_linux::zabbix_ip: '172.25.168.2'
+team_linux::zabbix_url: 'clnp33337.cak-bz.local'
+
+# RedHat Satellite
+team_linux::satellite_server: 'satellite.prd.sysmgt.func.cak-bz.local'
+
+# the proxy for internet access
+# this is denied by the bluecoat unless explicitly allowed
+# based on target url and requesting node - no user password
+# managed by team infra
+team_linux::proxy_server: 'cappbcsgx.inf.cak-bz.local'
+team_linux::proxy_port: '8080'
+team_linux::proxy_user: # authentication is handled on bluecoat
+team_linux::proxy_password: # authentication is handled on bluecoat
+team_linux::satellite_organization: 'CAK'
+
+# Puppet
+team_linux::puppetagent_runinterval: '900'
+
+########################################
+# the CAK Linux rsyslog and SIEM server
+########################################
+#team_linux::rsyslog_server: 'syslog.cak-bz.local'
+team_linux::rsyslogserver: 'clnp32922.cak-bz.local'
+team_linux::rsyslog_ip: '172.25.168.36'
+
+# common rsyslog filters to stop messages being seen by zabbix
+team_linux::rsyslog_msgfilter:
+  skip_drive_cache_mode  : "$msg contains 'Assuming drive cache: write through'"
+  skip_hrtimer_interrupt : "$msg contains 'hrtimer: interrupt took'"
+  skip_init.ohasd : "$msg contains 'Starting execution of Oracle Clusterware init.ohasd'"
+
+
+
+########################################
+# Electronic mail and mail addresses
+########################################
+# Postfix default SMTP-relay
+team_linux::smtp_relay: 'smtp.cak-bz.local'
+
+# e-mail addresses
+team_linux::linuxbeheer_mail   : 'linuxbeheer@hetcak.nl'
+team_linux::tiso_mail          : 'tiso@hetcak.nl'
+############################################################
+# moved to team module: ncs/team_ncs
+# DG-Infrastructuur-Management-Network-Connectivity-Services
+############################################################
+# SMTP: ncs@hetcak.nl (preferred), netwerkbeheer@hetcak.nl, ...
+##team_linux::netwerkbeheer_mail : 'ncs@hetcak.nl'
+# Sender for Network Management
+##team_linux::netwerkbeheer_sender : 'netscp@hetcak.nl'
+############################################################
+
+########################################
+# Groupdata: only explicit groups
+# not "user private groups"
+#
+# NOTES:
+# - set the user primary group ID expicitly in accountdata!
+#   use the same number for GID as UID unless a different group is required
+# - usergroups managed by localgroup.pp except for sshdummy!
+########################################
+team_linux::usergroups:
+  sshdummy:    # needs to exist on al VMs, managed by ssh_dummygroup
+
+team_linux::groupdata:
+  git:
+    gid: 498
+  sshdummy:
+    gid: 666
+  oinstall:
+    gid: 1500
+  dba:
+    gid: 1501
+  domain_users: # placeholder/replacement needed for former AD acounts
+    gid: 513
+  eessi:
+    gid: 2143
+# explicit usergroups for same accounts
+#  novlua:
+#    gid: 2102
+  ############################################################
+  # Dirty solution: add remote accounts locally if needed
+  ############################################################
+  #gl-integratie-mft-tst:
+  #  gid: 20019
+
+#    members:        # add ssh access also!
+#      - 'admslatinovic'
+#      - 'admdgroot'
+#      - 'admraukes'
+#      - 'admpbulk'
+#      - 'admdhendriks'
+#      - 'admnjahangier'
+
+# NOTE:
+# see accountdata for user primary groups
+
+########################################
+# Local accounts that used to exist b4
+# before IdM/IPA are moved to 
+# team_linux::localserviceaccounts_legacy:
+# in legacy.yaml
+########################################
+## accounts that need to exist on all systems
+#team_linux::localserviceaccounts:
+#  oldhomedir: # only relevant for systems connected to AD
+#  #splunk: # moved to data/role/team_splunk~role~splunkhiera.yaml
+#  ansible-beheer: # moved to IdM/IPA
+#  sa-nessus-rap-linux:
+#  qualysscan: # moved to IdM/IPA
+########################################
+# Local service-accounts like oracle
+#   (but oracle is added in DBA roles)
+#   only global accounts for now zabbix
+#   and bofherd
+########################################
+team_linux::account_locked_passwd: '!!'
+team_linux::localserviceaccounts:
+  zabbix:
+  bofherd:
+  qlsagent:
+  tm_dsa:
+
+################################################################
+# data for local service accounts that might exist on a system
+# localserviceaccounts
+################################################################
+team_linux::accountdata:
+  apache:
+    level: 'localservice'
+    gecos: 'Apache'
+    uid  : 48
+    gid  : 48
+
+  awx:
+    level: 'localservice'
+    gecos: 'AWX user AAP infrastructure'
+    uid  : 988
+    gid  : 988
+
+  git:
+    level: 'localservice'
+    gecos: 'git service'
+    uid: 497
+    gid: 498
+    homedir: '/var/opt/gitlab'
+    homedirmode: '0755'
+    sshkeys:
+      # r10k puppetmasters
+      - 'command="/opt/gitlab/embedded/service/gitlab-shell/bin/gitlab-shell key-19",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDMxQzllQ26zQuBKFwkD1/rC15QgrWIlJ3pWGB0mP27hzzNfLze1L6qaEZGmvKjkzcCon/MuyQBuy9hjZmBlnug/1s1V0ufzcJtNXnDVH8GGulSGQy4hQhiwYwbMctUh3Kdx7wnDSEVNIPRGZcgt+McQTBwTDp+UJG66n6ell0JnQB8CBgTDd/qiaoJuOdcJ2qqKMFishPqKYwbVlnup+QECLksshhJ62TEztU0/mi3KtcEN4My17DgYIxOkCv7H8zJ5SRUCVHm4Ewq24+xjNqsrmUKWULvJyACpffzxRjuyzeX94hCr8fC8Ho6pmpo3PJavBZV/OirIpm7G4YrLOW4m9iTR2OTJOT8hZjMlg7RHVnk6MqQsLGM3zbADiLGdZWQrH4rcsHIGFmyRONIddQmfSm5LYjHRHbkxTEEk5YcL9mJociG02ya+foZjQJ3su+DWA0zULnChaIlbyGANtxX33HzmQzJtfij5czE5xcHTpJVAuUWkWBdYZ91eNftpB58jWnsMyGP2suGcHW9PCwX6vK4OAJ//Rd1CF0aGFOH8bDkGMQMeMBN6W0SskfiSBTJSFUmlNJdMhvlgykK65uqvVWS/PGq4/MaZOPFoAw3MsVCebG3Mo9o3TxmUGkPIugHOBApAg85slfwMd+/R5Z+WxT7PKKpBw1BRFGSLyQ61Q== puppet_deploy'
+      - 'command="/opt/gitlab/embedded/service/gitlab-shell/bin/gitlab-shell key-22",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDIXFtt8c9neHjUkruRWFsU2mWuGbdrPKxYLgijJ3DRkRYQ6L9eycK+UBKlf2DIK9JPEijMC7ZJuHxkvNvHD1B77yxoXw4FAmcNUOqQI0CeyM/Md6StDuaYmTxiuX8n5fTzMTsAzlsWj4FRoDK1820C0finTtC71541VNEdeOGxnLFW/U1uht4M7qtYU3KS2hJUEi4i691wcmJv2Dtdp3SZk6ElCyOXl7xPlsEgVpSlRUWOdW9H9gD0WRI78hQdE+iNctqqGmEysxK/ECfVV9IN+vNMaC68/jN/qbTGjGZ5QG09I5O15Y3pU4NLRwyFRtNe8cnZ8kd6yWl0fwgparL6SPBC3Wor6sKNc0MiM59/buH5wt9optInOlYU4u7001WFBpAswRJdH5njbR/THqFp8oIjBkxn5ixH6dK9PHpeZatQLC8/BGuvymAn7a/IVod5CSPjn9Pdl1NrJeD1ENpaZJSgt8RGotHenh4Oh/mbTsfTpaCKmmAS2XtYJVB3dGXf6xSkEzm46Hc0rCo8bwzSmVywKwm7UBajdv6f9oul/eLaTQQ/ubCbXJVpfn9CoxRVqMPVq/oNDZIkWznt9AxU7+kXPNjjMkAITGLZAMiiSCX804JaozxqTsjx/jKR/4jzHtfW0u4Y6o887a2BJlMIZkbKNr1xAw8xe8Y+qEP9kw== puppet_deploy@microsoftbeheer'
+      # git users
+      - 'command="/opt/gitlab/embedded/service/gitlab-shell/bin/gitlab-shell key-1",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDqdaoywsAbdsEKvrjS6K5BH+sjWkUD7SH10qdA2ySpA14/v7C0l91uK7Qiw8Y7uXR5T7Oah+dhy6ZgfPcf/PEBYGbk6fmTq3LWkULr+8w1ZvBewDgDxybHU8r5+6WPjPKqced8mkoiSRM6EkOfY8am75PImJlRBxrxpLwKlXPCtBVKs/g3Cq64MwLr8hZ39rT5r4PqOUbCL+eb7cfZMwmDnKJz+ctJJM1goJUptpG5q0WfUqbMIb5NpRQZr1QBXLyzlL/0O0Z9wGxXF3IkrPmCpWDF3/I64x78noPmXx4W3B0TejU6kszRW4TKjHjMQQc0iBWlvj/XHVu6CPnftnHe+t9vdlGV95/iGfcv+tIxjJEWd+tMg46v2Otv5BNP3I1xPcSNLurRXt2+URuHBwLbpRldEKS//+t7SH/d895WNbbYqTiwercieUsBO+QAQ6U0+JCovdZzOnUEcTahKjswpldfop2OOWqyxxEgd8R4mKd6omwtpiKRVatRS+uYOwFo3BGrinUV8ipgt85M4M5WywSx62x0fIwioLQsO8amxmkLvnk9MU+67lKCKeWDTqaTpNKvFCpd7dTeIrniZWQm+cvq/hlDqL0t+zy9i/XaBZU+t+XWa9/cluh7aCNIuM0IP5v18GiyvcIimZu4QSGZljsG5uHZmqAsBddMs5E3fQ== admsramlal'
+      - 'command="/opt/gitlab/embedded/service/gitlab-shell/bin/gitlab-shell key-7",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAlGzTUM4mU/VUnQMotwv2WZtvM2HzHMGIraMsM+ZGv7b+nb4sC0m+Eq2wlq7XUv7tnsWDSSsmtldVNnUh6ychLfQnWHCBbf6VPy7kkwDcM2fU2n/fjs4bv1huZIXhrYAwvgxS7ilax+LJdLF96ENg7SJsN4/kOi37/j+UArnLWZswUwer873bJl2D+vz7Yoi7EOe5NlHR8CI846LCm28S8DiKCbdB2Y3MWVqeEOPnwTLDiAU8BbQRYIWVd2hl/tgYc7oDzNMdsd7MwGrpXAYgVV98FfcvlTJC+g6re4Qfux2iOT0qWNUYhBEQ9DJHeTiTQYyn2T8KGnhTrbQG99MQ1w== admwkamp'
+      - 'command="/opt/gitlab/embedded/service/gitlab-shell/bin/gitlab-shell key-8",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAgEApiS4BLMC8gLSZcSNr5d3nYsSJOhBTYsUnUNB38ay18A4UM1x6s/V4EajZQLykCIoMrQMhp4gl8uL+hiYpPhwn+1CbiY3kaxAySgDTZKEXvYcDtsmcQEKR+9b1JkW0JhJJmmrTvjMbaKmGZkGgWWvjmhQtEyV0tUrqjrkUXoglPAacFm4aqrlMLcv4tz3ouwipVPryfTTNdHR18V9gFLDmqRfktBS7kfjasuWFyp5W3X/BXQgP9l9q44jrx9F8TWxinBc1DxVGbZ9Nslt/mli5Iv/QI6mWllRqtUIdoS/axGj5jaQztNZ7swmSR4X8WaqTiI+LDdkoLfUIVkmzbFKNDavtq5MIGyMxR6YLWSzAFP2tIFhhuxDgzHQfoHiWBotMjzl9Zqg74Umyr+j8cdw6pkymk9R2zCeuF4A8Df/C4OlpTcoD3YDJPp0+wePle0Zy50l8ZMPmRBPuVXPrPWQ5VQNMK0qZD5W1hlNS6hpDkaDKVLJDXcsyVc5wKH0APzJnz6LLNBqyRwQKhrIqa/0qxI6QDSiLNCBS+31zbE198MyGqUdo2gsBXA+2+/M5VNJUr3CQ69QoZg5VgBCc/0O0foV1+3v/P2Y+8g0Xy4F744lE6e1gJu2gWoa/OjKmIwN9FFkTmHM1ZEx1yiPuv2VRapi2TOC4ZWQZfa1naUjm7U= admhwit'
+      - 'command="/opt/gitlab/embedded/service/gitlab-shell/bin/gitlab-shell key-11",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCZ5k1WJ/bao+3gfevRAQFkKkeotFY+fMVwd5bS0sn3AOGpsKAPnTkjghGbq30qaY6M6PZHTSJrLT1IykA2Zhc09NaAgbfCFQitAITsUpwgygZayWP7LYK2+CJzmkOlG0EkKyPggw3vOfc0NmHzogHVAVYoTOnsuB+gUA+zOGohSn8okCVeakbUgStcPlNPK0BYTa5jjZGeOYtR6baGpmEKUYOPPKWRR6SFq+FUFBpXBZN+eYSqEhcUJfTO9MABNMMlRH6fP2ZDKo0AtO90HJyxDdpEPdSkIvx/I6aM+4zlPs2Fcp6MP7l6nEiTKCkGzmPU1NEajVj0ie7Wk7WE0NRK8z332/boG02lK2v125qlBI6wTB5d9UvK3KUXmwr8wHFap4yp+QE/tMasg1KDEHg6D/CHczc3i7C39sm3W01y0/8fSmii9DA9tK+vJQCmS+ag5+aQIMjdVgnMZ++PXw3tV6wiIpEvqP7LF/Jl6ft2S2gW4toNURQWxD2eFa7ZuFyr67hP1LPn0m994hgHrwBDh2FyOqvS41+h7mXiPQAMcalkTkmur0JsRaBo6ezHnZrl3BKGsJB/G/FerEckJ9DVUlwJFTVYbfG9Iv1qpzwwmKAQ+7wDoI6DvfSpUkbrd10j/2nc7JI+PxhyMQC+lQS08JORSIEkru9jf6T41QM+fw== admjpoutre'
+      - 'command="/opt/gitlab/embedded/service/gitlab-shell/bin/gitlab-shell key-15",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAxIwMBJv5jkuGXM0PFH6D2y16W+AD9Ij1dyW+khNCVP1lmksDANyH66C3KWd5Taq88dBHig4tlYbwtVa/tJkabnYSy/9Iy2gdOCQ49owMeIZaDiROlOEjRB8biC94zmlchECSmLtJNAjy+0dVkJur0dm9He7nkpuolKElU9Ht9Vm1SkaSBIRdbhChZhm0/8g0eFNUXD8lIVdZcOllAJMmDl6wFl8LqTO/M/6yPHZ88WXP9RHu8c/uLctULe6u0SU6k5A3SnLj/xCsZaHS15T2oFCD3ukzy0Bgd1cd0B9So/ugAcHyJawoQeOhelsf17hocr3Skums42JZ40XlLj1qLQ== admeimmers'
+#      - 'command="/opt/gitlab/embedded/service/gitlab-shell/bin/gitlab-shell key-20",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAgEA0ulS4ZmXoOD5SLWbSAV2rcaU2E2tFQPd2hz9g6oRY9MZwJOg6LWGciVgQJAa3FY1r+TYMvBFki3xsbNaEciGWvyomfD5ZwXj13VEiTWFTc9ubw7zle4uq4ShuGlW99iQDhQ1FPMyycGIRYAwNctJd3HxFu3tlnFzTBdh3U9x4aRyUO/XsHD/M74jv48VyoePeapHwcIKruVhTPxrt78aw3u9Rpvx7v2TNTkZghvfCWKIBVxhZiPy9w1opLjNcVqwlt/qwIwccgouxX+yIIek308204qbsg9DldZ8NJreEiInZvG82wc7r/+Wk15ju7qAnb7ARLWzyoBG0YYSvMWF7xC0QFWBkZZjnkn+WQebfa6bkRDMbFhajggzwTLaker6CxGWCPX/AgrGSxwjiKvyako0QFc5jsns3YVaW8Q8Tr2Z9UPnFILp+2Ze3HZGqfYSNuC3zxy7ux3n8Wsz05e0wHqgeTe/v62hRpZ7KO2jfzSyyWGgEQnZhGcHxngz7lAVIHc3jrVWb2tz60TR0sCTVoytEidXaZYPXwLj1YLqg5+7o+I8zF7dsFyZTVhsWdQmunPdAzb3CH7Ix9S3G1dXSU9OsePUck5bIYlGXh8225BYRBLDY1rNgeUnDGAY1dMP2ZhvXj1IRoyJMYiCTbKqYi8l5t567SVnlrdfTwlkH0M= admdhendriks@git' # Disabled I2103 1670 (20210510)
+      - 'command="/opt/gitlab/embedded/service/gitlab-shell/bin/gitlab-shell key-23",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAmMVGAsMgXzOuOEPF1DG+VaGuINp8IYgl2u6pp6D3+bSmLScOmG8sK84TF4RiXOb97vlXVJS+JOEgd6AQjWthuSWOWBZ93FY+jXma7T104x4AZ+qOfhCU53qfSGVDsuoar/lHOGhshF66GC+SErxNT+pt31iGny65QfRLBUWrd8BqPPzexTzlJNFl1ehUz73Qf5bSS2ZIVdJAwmjTHFbpDe7m/Cr3kABvGuyVIvK30TJECCgnWb1aC8MjtbUbeuTpy6/NbnqBiS+hfAykt3YDWc/C9793FX04txI1I04ZrYGUaUVt9Z+g+NSVQEzcLyy7So47F7HHcjT1jQ2TCOZTSQ== admramond'
+      - 'command="/opt/gitlab/embedded/service/gitlab-shell/bin/gitlab-shell key-24",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAgEA0LYy2wqh1zHE2z+ipGylMPtoALPspEKScCd14Xlt9P1q5ffm61RCpPI8OSCyUpmhSPKz3L7s51CHcy7PCFw/OKsANtNFUMDK6wTFSvMgR5eChAWroRf+goLN5oplrw58aF3PZyBS6vEgBAQLvBGi821XTaJohWgTssM7d/FXxmwaVsyXvP7TqaoShdI88uI89eHZgC0w6cfMtjDN4TJKbWDSPN6tDMJ4DqN4nInBPYkHf7QpoQxFey1XpGTrxk0bZRVQF3my7lZXuZkPMhu8Ivd+cpveBfPQQkrSyInHdGpS4W+JVKZNSSeGwQeFoMw0E2xMdsAmcrtHTRUmGoFISP3sKlhBDck0JCqhaZLTdipgT9CsbGEltSEFS7+/GAEzZITMUhq15Gdku6HDJBXseM2x2C40EyalwfZab9s8pihjMRxCOhvNU1k7Ht01/XljxFbeAWU3/meQZcV719gI8QGAvHaxUWZ1cEqDlFA/9mRI4Y8q0fMnTxSEl5xCV4ZJSTUVK1ZYQWDDDdZIrxBjzi1ImrLHsQKBc47h7Fh9g/6bb+optT9tjM3MTotopwQ1NjY2EWxqYO7fQtbOClX0KYzM3TTxn2ynkuEjzIZiNjwCU7Jx9uyNlk1oy1eA12mjSAt7G5eVkttEwsij03IPbTYKzOnM7sxjxX3ZDfsYm+k= admslatinovic'
+  pe-puppet: # not actually configured by Puppet, instead the Puppet installer
+    level: 'localservice'
+    uid: 993 # will be different
+    gid: 664 # will be different
+    gecos: 'pe-puppetserver daemon'
+    homedir: '/opt/puppetlabs/server/data/puppetserver'
+    shell: '/sbin/nologin'
+    homedirmode: '0755'
+    ulimits:
+      - 'pe-puppet hard nofile 65536' # see module puppetmaster instead
+      - 'pe-puppet soft nofile 4096'
+#  puppet:                 # Use 'puppet' instead for Puppet CE master
+#    level: 'localservice'
+#    uid: 993
+#    gid: 664
+#    gecos: 'puppetserver daemon'
+#    homedir: '/opt/puppetlabs/server/data/puppetdb'
+#    shell: '/sbin/nologin'
+  vro-plugin:
+    level: 'localservice'
+    gecos: 'vro-plugin for ENC administration'
+    uid: 1001
+    gid: 1001
+    shell: '/bin/bash'
+    sshkeys:
+      - 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEK42mS0OnjYRzrXaBR9/uC9QDnG+9sP4pVTZELCsKAK vro-plugin@netpeers'
+#    groups:
+#      - pe-puppet         # Use 'pe-puppet' instead for Puppet PE master
+#      - puppet            # Use 'puppet' instead for Puppet CE master
+  oracle:
+    level : 'localservice'
+    gecos : 'Oracle RDBMS service account'
+    uid   :  1500
+    gid   :  1501   # set ID for non-default primary group here
+#    group :  'dba' # do not set non-default primary group-name here:
+#                       - use membership below for non-default primary group
+#                       - workaround non-default primary group in manifest
+#                         (to avoid "already declared" or "groupadd" each run)
+    homedirmode: '0770'
+    groups:
+      - dba
+      - oinstall
+      #- sshdummy # add this secondary group via ssh_svcaccounts or it will overwrite some users
+    shell: '/bin/bash'
+    sudorules:
+      'root':
+        tags: 'NOPASSWD:'
+        commands:
+          - '/usr/local/bin/nodeinfo'
+          - '/usr/local/bin/puppet'
+    admin-access:
+      - '%dbadmin'
+#    ulimits:
+#      - 'oracle hard stack 16384'
+#      - 'oracle soft stack 10240'
+#      - 'oracle hard nofile 65536'
+#      - 'oracle soft nofile 65536'
+#      - 'oracle hard nproc 16384'
+#      - 'oracle soft nproc 2047'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAgEAyMri/4c9F4F1Vb138K8gTmJGuZY2B1J3g3JTGHM44cQtJ3tbdeYjLp70HltlTwRCpzdvASHqYYGa1lhobUqNwsMYnpOTnnN5WEPp94XswrWY1I5twf1M+CL3etFLcjkr3wrtw7ZCtgF77ohm2aD9oyQzh5lTiGgFTt2NRwpD3dtcXcSeEbspJX+RGiNwJhDrtfJoohW2TaYTQLoenQMY/0lDhHXNN4TxlreCgHo7XrEfmNccBYOerqIyF1F4xuz/8DnxQz40FR/zYMkoOKyX6ea3Br4KWnP3xVhWCuzaBLMrzTjrn3v3UKWC4MjPr05jcaQ7FAMgm3YcBKBHiR26p98WrRSnH9JLH7zlWCgFCVEwXrP55hQ646L6G4QbGFcUsISYzRY3GjZxTBXjQ0+iNYJ7IPA+H4ov4RQJD3+ycHPEL11auhk4jk6iax7ijpuGBkygAu4jdj/AwLUMQVzGUT+y71Y/3JbBw+m5nN/Twl1tsWmCT027PvGt7jvNejFKPV3vJ6ayhrWFdDQvMuoJSOw7K36bzp8yZqp1PuRB0GnfVJM/qwZyDO1MPOysV8VEOeXngzmh2mWcy5SbZKYxRwGQnslTre/gm/rLOBqQEezZnM9E7kdgWJbqLn8DAmoLre3a/0a67ZNH3t3W63iSrSE9xRnB5VWFkqqUN61BRR8= oracle grid control'
+
+  cronacle:
+    level: 'localservice'
+    gecos: 'Cronacle user'
+    uid  : 1526
+    gid  : 1526
+    group :  'cronacle'
+    homedir: '/home/cronacle'
+    admin-access:
+      - '%asadmin'
+
+  appsync:
+    level : 'localservice'
+    gecos : 'EMC appsync account'
+    uid   :  1606
+    gid   :  1606
+    group :  'appsync'
+    homedirmode: '0770'
+    groups:
+      - dba
+      - oinstall
+    shell: '/bin/bash'
+    admin-access:
+      - '%dbadmin'
+      - '%emcadmin'
+    sudorules:
+      'root':
+        tags: 'NOPASSWD:'
+        commands:
+          - '/opt/emc/appsync/acp'
+    sshkeys:
+      - 'ssh-dss AAAAB3NzaC1kc3MAAABBAPymgs6OEsq6Ju/M9xEOUm2weLBe3svNHrSiCPOuFheuAfNbkaR+bfY0E8XhLtCJm80TKs1Q2ZFRvcQ+5zdZLhcAAAAVAJYu3cw2nLqOuyYO5rahJtk0bjjFAAAAQGeEcbJ6nPRO6RpJxRR9samq8kTwWkNNZIaTHS0UJxueNQMLcf1z2heQabMuKTVjDhwgYjVNDaIKbEFuUL55TKQAAABAKN8Kbq3Or11u1HxlTxaj4ekLJF7FsZcBWZuOqVyXf398ZHXigCzTKoXA1FG0UnB+9HTwpyXj06LcJj838Sc48g== appsync@cwnp35010'
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQC3F5GukfSlSDVxAroz1E/iyB7nXPUria1nmbzIJlO3bq9cHl8Xle1y0D0JQo4DKb+Y0cujP8XbAS+Hjbo311d6cybLyYc9QylYCchz3zOvD4lUsp6SJJ3JUCzJ0CygyX0GPIbAMsHnQnKsP0QvJErKlN5k/e6pmuVZPPUPZlSyuQ== appsync@cwnp35468'
+    ulimits:
+      - 'appsync - nproc 1000'
+      - 'appsync - nofile 5000'
+
+  deletenodes:
+    level: 'localservice'
+    gecos: 'Receives delete node signal files'
+    uid  : 1607
+    gid  : 1607
+    group: 'deletenodes'
+    shell: '/bin/bash'
+    homedirmode: '0770'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC/4o5WBUmNuoaiGsog8aECVMFbShJCElEXKaQJoUyv9Vst+w0VjHqT8zzt7CJVzrChfRE5moyYfbbBZRfFdv10BPIeOZLVUoTbVgmjxMGsuyzTM55LekIbghadQh/mwyhhINsSQruQII/9nDiII3aZBZEqU/4Pykn30hwEAj6fWEjceyd+14iHi2JUObAk3Dd+LJ+BYr3ytx+vqz2xYYRsmzmr4nUswnu4q/TrTmdiLDS8UYx+gW/zkaFa1tn+7474a7Ds/Wtn8EDLWEhO+v7oi2W4Jp4zHnbRRbnvzKz67jWpsBgzFRWwr8q3M7OMj4V7XZB6uqEu40zmKheV7wHF6JcUK2xw+KSz9D8YDAKsXnZvi7L4Qrvx1/hSXTdAyfMSnc6Itjd2mAL09WenksChxyA2q9xzAW50bnLB59AFzveoT/RY9pmruyajYCLPUmJ248pgck2n2y3Tdm3jbt96h1/TLM2wxUhuRg3H6KTH+DwtGrUarGXJPmy3a3wCJmfQmN5kaKz+tIzix1tWrLw9rFhGVs1rAz+WrA2eNuAch5Z5wg6TsRpgzUTEeclnF34Z3rZVWzFjX15jWvFRhoWVVa98ifCSXH2FAx4dzdnDR9/qI+sE65mty9qvDjkjnnenc5jsoiWY0TBSpNZntrtapq+wjlzb53nGd9h/iFbDrw== root@puppet.cak-bz.local'
+
+  encsync:
+    level: 'localservice'
+    gecos: 'Receives ENC files from the puppet master'
+    uid  : 1608
+    gid  : 1608
+    group: 'encsync'
+    homedirmode: '0770'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC/4o5WBUmNuoaiGsog8aECVMFbShJCElEXKaQJoUyv9Vst+w0VjHqT8zzt7CJVzrChfRE5moyYfbbBZRfFdv10BPIeOZLVUoTbVgmjxMGsuyzTM55LekIbghadQh/mwyhhINsSQruQII/9nDiII3aZBZEqU/4Pykn30hwEAj6fWEjceyd+14iHi2JUObAk3Dd+LJ+BYr3ytx+vqz2xYYRsmzmr4nUswnu4q/TrTmdiLDS8UYx+gW/zkaFa1tn+7474a7Ds/Wtn8EDLWEhO+v7oi2W4Jp4zHnbRRbnvzKz67jWpsBgzFRWwr8q3M7OMj4V7XZB6uqEu40zmKheV7wHF6JcUK2xw+KSz9D8YDAKsXnZvi7L4Qrvx1/hSXTdAyfMSnc6Itjd2mAL09WenksChxyA2q9xzAW50bnLB59AFzveoT/RY9pmruyajYCLPUmJ248pgck2n2y3Tdm3jbt96h1/TLM2wxUhuRg3H6KTH+DwtGrUarGXJPmy3a3wCJmfQmN5kaKz+tIzix1tWrLw9rFhGVs1rAz+WrA2eNuAch5Z5wg6TsRpgzUTEeclnF34Z3rZVWzFjX15jWvFRhoWVVa98ifCSXH2FAx4dzdnDR9/qI+sE65mty9qvDjkjnnenc5jsoiWY0TBSpNZntrtapq+wjlzb53nGd9h/iFbDrw== root@puppet.cak-bz.local'
+
+  oldhomedir:
+    level: 'localservice'
+    uid  : 1601
+    gid  : 1601
+    group: 'oldhomedir'
+    shell: '/sbin/nologin'
+
+#  sonar: # legacy, see new account definition
+#    level: 'localservice'
+#    gecos: 'Sonar user'
+#    uid  : 1610
+#    gid  : 1610
+#    group: 'sonar'
+#    homedir: '/home/sonar'
+#    homedirmode: '0755'
+#    admin-access:
+#      - '%asadmin'
+
+  netrepo:
+    level: 'localservice'
+    gecos: 'netwerkbeheer repository user'
+    uid: 1611
+    gid: 1611
+    group: 'netrepo'
+    homedir: '/netrepo'
+    admin-access:
+      - 'admmnolles'
+      - 'admthenczyk'
+
+  netscp:
+    level:   'localservice'
+    gecos:   'netwerkbeheer appliance backup user'
+    uid:     1612
+    gid:     1612
+    group:   'netscp'
+    homedir: '/netscp'
+    shell: '/bin/bash'
+    homedirmode: '0770'
+    admin-access:
+      - '%g-mg-l-network-admins-p'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAtOor9qgTFmYVa1QjoBp8vLwaSTCg4gRTciRUKPYrcR1YtN2bIvvWrxkuPwB4rqCAKzXBzn+AaMBkBBQ1Ilm1y/Ao5ic4Qe+UBheEaqgjdJE38N7gm/iKeYkXHAp1kJ5pyPq7CcheEdxApuCEwEDWTYEae1kUAqsT7Jn4lZWzcGpyp6xHQfkDhIMe+uscrz9U8LZ9fJef0A5FpUjyd2T/2FryYcXLZTuV9wPewXyICLtyUhcV0YBel1y2RdKONRqQRoOjzwpNvthqOhq7VdzgXyL0uGpaSMP71XI4uoQtiz4jBfTK535w1iTq3b7gfChm1x9AdyTnxTDoCK2lGhHTmQ== root@nlbt1001.net.cak-bz.local'
+
+  netcert:
+    level: 'localservice'
+    gecos: 'infra - generate network certificates'
+    uid: 1613
+    gid: 1613
+    group: 'netcert'
+    homedirmode: '0770'
+    admin-access:
+      - 'admmnolles'
+      - 'admthenczyk'
+#      - 'admdvrouwenfelder'  # Disabled WA2211 0388
+#      - 'admrveenstra'# Disabled I2103 1670
+
+  splunk:
+    level: 'localservice'
+    gecos: 'Splunk user'
+    uid  : 1620
+    gid  : 1620
+    group  : 'splunk'
+    homedir: '/opt/splunk'
+    homedirmode: '0700'
+    shell: '/sbin/nologin'
+    admin-access:
+      - '%asadmin'
+
+  nexus:
+    level: 'localservice'
+    gecos: 'Run-accoutn Nexus'
+    uid:   2101
+    gid:   2101
+    group: 'nexus'
+    homedirmode: '0770'
+    ulimits:
+      - 'nexus - nproc 1024'
+      - 'nexus - nofile 65536'
+
+  novlua:
+    level   : 'localservice'
+    gecos   : 'User created by NetIQ IDM RBPM Installer'
+    uid     : 2102
+    gid     : 2102
+    group   : 'novlua'
+    #homedir : '/opt/netiq/idm/apps/novlua'
+    #shell: '/sbin/nologin' # Novel Tomcat service startup requires a shell!
+    shell: '/bin/bash'
+    admin-access:
+      #- '%asadmin'
+      - '%g-mg-iam-ont-uap'
+      - '%g-mg-iam-tst-uap'
+      - '%g-mg-iam-acc-uap'
+      - '%g-mg-iam-prd-uap'
+      #- '%g-mg-iam-iga-acc'
+      #- '%g-mg-iam-iga-prd'
+
+  confluence:
+    level   : 'localservice'
+    gecos   : 'Atlassian Confluence'
+    uid     : 2103
+    gid     : 2103
+    group   : 'confluence'
+    admin-access:
+      - '%asadmin'
+
+  azurebuild:
+    level   : 'localservice'
+    gecos   : 'Azure build user'
+    uid     : 2104
+    gid     : 2104
+    group   : 'azurebuild'
+    admin-access:
+      - '%g-mg-as-4'
+
+  ansible-beheer:
+#    groups:
+#      - sshdummy # for global access needs to be in ssh_svcaccounts instead of localgroup
+    level: 'localservice'
+    gecos: 'Ansible beheer user'
+    uid  : 2105
+    gid  : 2105
+    homedirmode: '0700'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAurDXIQGZrlGU5ZGRJ3KaARxYtOgwklX/CDDVk8a5wlDP/kDWFYW/4oVRoV5T8LDyDj6rUHlRW1nxELHEkFaNhpFbsYTB2csihVVbrHgEelpcywJYV5RPCpbxAGcDZFpBV/+9yzb3sY9/5pUe8khkCXWEunGbYUH8Ud4QM94KHyvegUsoV4GUTm9Tx4STqbSVfwFK3+WvzqKip4Pi0aCwZkr+PrqYCMxPVQdYa719JmGFAa7JlmBEwBida9BbazuirGRn81Yz8uNmCcixqb3v43w0392QCfdFhaXN4ermmR2qu0NbAmB5pKN9Gj3WSEfkxZKN/kcnXqx/WbmhAhmzuw== admeimmers@clnp32598.app.prd.cak-bz.local'
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDHCh7yioXheGB9M1kP0u/+1FuJVdbTgUgIoYG4btAE1kdNR8/sDcmHLzRNgFIwi+pJdxcZqN3cBF3dwkaa5DseqM97fwExr9rHknXkzKPyqE2YCRXJn3zZYWZPxORzJ34jigUe9P5b+mTDQV8OYW4qzXMhf3TqP63s7sNoHKiUmkQUWA7BJiwh4eYh26XNE31vGZtAhKtY4tx6TnBdnXbEaefdOOkTi6hyUfxdiPNgW7LiYyJEugp6DlWJCK89l877mSykgjzSzvXV64bOM6EPkRAYlyQTwpuXbraNc/LOtJ/DYZlsZtV+zFWnByX+WfCowqZVYbObFajPIISo27o5 root@satellite.prd.sysmgt.func.cak-bz.local'
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDfdhtDGxU/bby2+oNHyeH73Strcjn8HdEsv0dr4bzYD+JH9vVQCKiKz/w4wxzZ4PS38ug9LYK3LTSxPczpk5JKVoiDia3McDGF4NO0ESWKPsXev/feosvdxiy3JeBhe3Kdzyot0hUQbsy+iDNL4paJI1S0UR0TqQXQYNXzopeQZKmY86gZiYM+j/f0MPl33nXssUqSnc/Ps2Ue+kbihFE6zTAEIZJsLaoKs3tW4A0+W+3Wt3ZvJuhXf6sKsi8b+mhHPNGYOKQKNh94nasvAw1rKGbP+ydpR6tmwq4xhg7J2dcPxZYqI5zCUKur43bHx3zHF6q0OkYD5rwPHqi22qg/ foreman-proxy@satellite.prd.sysmgt.func.cak-bz.local'
+
+  novlwww:
+    level: 'localservice'
+    gecos: 'Novell system user'
+    uid  : 2107
+    # Use /home instead of application-home
+    #homedir: '/var/opt/novell/novlwww'
+    #homedirmode: '0755'
+    #shell: '/sbin/nologin' # Novel Tomcat service startup requires a shell!
+    shell: '/bin/bash'
+    admin-access:
+      - '%g-mg-iam-ont-idm'
+#      - '%g-mg-iam-idm-ot'
+#      - '%g-mg-iam-idm-ap'
+#      - '%g-mg-as-4'
+#      - 'admrtuit'
+
+  novledir:
+    level: 'localservice'
+    gecos: 'NetIQIdentiity Manager' 
+    uid  : 2108
+    shell: '/bin/bash'
+    # Use /home instead of application-home
+    #homedir: '/var/opt/novell/novledir'
+    #homedirmode: '0755'
+    admin-access:
+      - '%g-mg-iam-ont-idm'
+#      - '%g-mg-iam-idm-ot'
+#      - '%g-mg-iam-idm-ap'
+#      - '%g-mg-as-4'
+#      - 'admrtuit'
+
+  sonar:
+    level: 'localservice'
+    gecos: 'sonarqube' 
+    uid  : 2109
+    shell: '/sbin/nologin'
+    admin-access:
+#      - '%g-mg-l-sonarqube-p' # see data/productie/team_linux~role~sonarqube.yaml
+#      - 'admstjintjauwwie'
+
+  novlssp:
+    level   : 'localservice'
+    gecos   : 'User for NetIQ SSPR'
+    uid     : 2110
+    shell: '/bin/bash'
+    #homedir : '/opt/netiq/idm/apps/novlua'
+    admin-access:
+      #- '%asadmin'
+      - '%g-mg-as-4'
+
+  rsa-web:
+    level: 'localservice'
+    gecos: 'rsa_web_tier' 
+    uid  : 2115
+    #shell: '/sbin/nologin' # very crappy software, needs root and a shell!
+    shell: '/bin/bash'
+    #    admin-access: # see role OTAP yaml file instead
+    #  - '%g-mg-l-network-admins-p'
+    ulimits:
+      - 'rsa-web hard nofile 16384'
+      - 'rsa-web soft nofile 16384'
+
+  ansible-dba:
+#    groups:
+#      - sshdummy # for global access needs to be in ssh_svcaccounts instead of localgroup
+    level: 'localservice'
+    gecos: 'Ansible beheer DBA'
+    uid  : 2111
+    homedirmode: '0700'
+    shell: '/bin/bash'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAgEAtAv8VHSUXbm3CE/Cj0SwIgdjAWmN6j+xRda05bMNScpeKd6IoC9qwii2Qhdr2n1NxifCQA0PnwdwIjV2pJPlhFHTWkxGX48YoJTv9r5G78I7rah6JD2g9VUwIEq+njTEP787XXR7ESPLBbEu8R/96Tsa2FNYySvg53O7O2j6oQh1eXh0ln6oGmy8TzyirfTXEJHv7GtYFqEiNChAU8jqXtxXZ7I1lggQpchLpftQrpWuBcdTo2iuKaKhMaxw6kmPSeBne4h6op8jffz1PL0adivOyT+93AgEQAbneDqYtvD1nHDzzGK0t/7ZirMDNAhXBWrJafp2K7IXInIAOHca5K0JPiPNLz7XGq9hkjwQsERboLJhuKLBy2maVZYEndBgKZOef9l8BSc6CJqyUJt33boCxSWQdjusFHi6QVwGBWmKEtLhvexXS5dC93LDF099+wYdtW1KIRCQBAeMMTIuw1pilhJE9bT9HxSzGHo948f3ZWq9Cdvk9Sb/OMsNIfXwKLI35FVpFfFDHe6jE+pFmpYz1DYOTD6BRHvQbUbId4kupVRuNOZYtpaquuNTjv2C3toY+x9EapQ6q+YUtzrPANiV4gElFXhFDfmT9e8XpXThrECdmJlQVuaaMqhxNeinCTdGW7ypD/OHxtT7/XpISOQLJZ4oOBJuu8+LpkjeRGM= ansible-dba'
+
+  novlprt:
+    level: 'localservice'
+    gecos: 'daemon-user tbv AAF instelportaal' 
+    uid  : 2112
+    shell: '/bin/bash' 
+    # Use /home instead of application-home
+    #homedir: '/var/opt/novell/novledir'
+    #homedirmode: '0755'
+    admin-access:
+      - '%g-mg-iam-ont-prt'
+      - '%g-mg-iam-acc-prt'
+      - '%g-mg-iam-prd-prt'
+
+  novlrpt:
+    level   : 'localservice'
+    gecos   : 'User for NetIQ IAM'
+    uid     : 2116
+    gid     : 2116
+    group   : 'novlrpt'
+
+  qualysscan:
+    level: 'localservice'
+    gecos: 'User for Qualys reports'
+    uid  :  2120
+    gid  :  2120
+    group: 'qualysscan'
+    homedirmode: '0700'
+
+  dsmadmin:
+    level: 'localservice'
+    gecos: 'User for Deep Security Manager'
+    uid  :  2121
+    gid  :  2121
+    group: 'dsmadmin'
+    shell: '/sbin/nologin'
+    homedirmode: '0700'
+
+  zabbix:
+    level: 'localservice'
+    gecos: 'Zabbix Monitoring System'
+    uid  :  2123
+    gid  :  2123
+    group:  'zabbix'
+    groups:
+      - 'systemd-journal'
+    shell: '/sbin/nologin'
+    homedir: '/var/lib/zabbix'
+    homedirmode: '0700'
+    sudodefaults:
+      - '!requiretty'
+    sudorules:
+      'root':
+        tags: 'NOPASSWD:SETENV:'
+        commands:
+          - '/sbin/aureport'
+#          - '/usr/bin/yum updateinfo'
+          - '/var/CAK/root/scripts/security'
+          - '/var/CAK/root/scripts/fixsplunk.sh'
+          - '/usr/lib/zabbix/externalscripts/nodeinfo'
+          - '/var/CAK/root/scripts/kerberos.sh'
+#          - '/usr/bin/yum -y -q --security check-update'
+          - '/usr/sbin/subscription-manager status'
+#          - '/usr/sbin/ausearch -m USER_LOGIN -sv no -ts *'
+          - '/usr/sbin/ausearch *'
+          - '/sbin/aureport -ts today -i -m --failed'
+          - '/usr/bin/systemctl restart *'
+          - '/usr/bin/journalctl --no-pager -xeu *'
+          - '/usr/bin/dnf *' # clean all, check-update, ..
+          - '/usr/bin/find /etc/systemd/system /usr/lib/systemd/system *'
+          - '/usr/sbin/setenforce 1'
+          - '/usr/bin/systemctl stop puppet'
+          - '/usr/bin/rm -rf /etc/puppetlabs/puppet/ssl'
+          - '/usr/local/bin/puppet agent -t'
+          - '/usr/bin/rm /var/opt/ds_agent/am/core.*'
+          - '/usr/lib/zabbix/externalscripts/unpackagedkernelmods.sh'
+          - '/usr/local/qualys/cloud-agent/bin/qualys-healthcheck-tool'
+          - '/usr/bin/pkill -9 -f /opt/ds_agent/ds_am'
+          - '/usr/bin/stat -f -c *'
+          - '/usr/lib/zabbix/externalscripts/undo_novell_library_config.sh'
+          - '/usr/bin/chronyc *'
+          - '/opt/puppetlabs/bin/puppet agent -t'
+          - '/root/git/satellite/sat_task_check.sh'
+          - '/root/git/satellite/sat_sync_check.sh'
+          - '/usr/bin/hammer --no-headers host list --field'
+          - '/usr/bin/hammer --no-headers host list --fields Name --search *'
+    customsudorules:
+          - '(root) TYPE=sysadm_t NOPASSWD:SETENV: /usr/lib/zabbix/externalscripts/puppetdisabled.sh'
+          - '(root) TYPE=sysadm_t NOPASSWD:SETENV: /usr/lib/zabbix/externalscripts/dsagentbroken.sh'
+          - '(root) TYPE=sysadm_t NOPASSWD:SETENV: /usr/lib/zabbix/externalscripts/check_novellib.sh'
+          - '(root) TYPE=sysadm_t NOPASSWD:SETENV: /usr/bin/zabbix_check_puppetstate *'
+          - '(root) TYPE=sysadm_t NOPASSWD:SETENV: /usr/lib/zabbix/externalscripts/zabbix_check_puppetstate *'
+          - '(root) TYPE=sysadm_t NOPASSWD:SETENV: /usr/lib/zabbix/externalscripts/undo_novell_library_config.sh'
+
+  novldsg:
+    level   : 'localservice'
+    gecos   : 'User NetIQ IDM dsg'
+    uid     : 2124
+    gid     : 2124
+    group   : 'novldsg'
+    #    admin-access:
+      #- '%g-mg-iam-iga-acc'
+      #- '%g-mg-iam-iga-prd'
+
+  sonarqube:
+    level: 'localservice'
+    gecos: 'sonarqube' 
+    uid  : 2125
+    gid  : 2125
+    group: 'sonarqube'
+    shell: '/sbin/nologin'
+    sudorules:
+      'root':
+        commands:
+          - '/usr/bin/systemctl start sonarqube'
+          - '/usr/bin/systemctl stop sonarqube'
+          - '/usr/bin/systemctl restart sonarqube'
+          - '/usr/bin/systemctl reload sonarqube'
+          - '/usr/bin/systemctl status sonarqube'
+
+  rtfuser:
+    level: 'localservice'
+    gecos: 'User for Anypoint Runtime Fabric' 
+    uid  : 2126
+    gid  : 2126
+    group: 'rtfuser'
+    shell: '/bin/bash'
+    sudorules:
+      'root':
+        commands:
+          - '/bin/su - root'
+
+  amquser:
+    level: 'localservice'
+    gecos: 'User for Active MQ' 
+    uid  : 2127
+    #gid  : 2127
+    #group: 'amquser'
+    shell: '/bin/bash'
+    sudorules:
+      'root':
+        commands:
+          - '/bin/systemctl start activemq'
+          - '/bin/systemctl stop activemq'
+          - '/bin/systemctl status activemq'
+          - '/sbin/service activemq start'
+          - '/sbin/service activemq restart'
+          - '/sbin/service activemq stop'
+          - '/sbin/service activemq status'
+
+  bofherd:
+    level: 'localservice'
+    gecos: 'Local User for system administration in case of emergency' 
+    uid  : 2128
+    shell: '/bin/bash'
+    sudorules:
+      'root':
+        commands:
+          - 'ALL'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCZ5k1WJ/bao+3gfevRAQFkKkeotFY+fMVwd5bS0sn3AOGpsKAPnTkjghGbq30qaY6M6PZHTSJrLT1IykA2Zhc09NaAgbfCFQitAITsUpwgygZayWP7LYK2+CJzmkOlG0EkKyPggw3vOfc0NmHzogHVAVYoTOnsuB+gUA+zOGohSn8okCVeakbUgStcPlNPK0BYTa5jjZGeOYtR6baGpmEKUYOPPKWRR6SFq+FUFBpXBZN+eYSqEhcUJfTO9MABNMMlRH6fP2ZDKo0AtO90HJyxDdpEPdSkIvx/I6aM+4zlPs2Fcp6MP7l6nEiTKCkGzmPU1NEajVj0ie7Wk7WE0NRK8z332/boG02lK2v125qlBI6wTB5d9UvK3KUXmwr8wHFap4yp+QE/tMasg1KDEHg6D/CHczc3i7C39sm3W01y0/8fSmii9DA9tK+vJQCmS+ag5+aQIMjdVgnMZ++PXw3tV6wiIpEvqP7LF/Jl6ft2S2gW4toNURQWxD2eFa7ZuFyr67hP1LPn0m994hgHrwBDh2FyOqvS41+h7mXiPQAMcalkTkmur0JsRaBo6ezHnZrl3BKGsJB/G/FerEckJ9DVUlwJFTVYbfG9Iv1qpzwwmKAQ+7wDoI6DvfSpUkbrd10j/2nc7JI+PxhyMQC+lQS08JORSIEkru9jf6T41QM+fw== admjpoutre'
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAgEAvtn7ewPCaQHvtUtCy9CeuQjzUwrKMKX2814P0lGGjk5tXOg8G1A5b7foOI3iuSVTI9lUzYvKnLNNByTMpHDpSH9F4pon/QLFkN0OLUWKT00d3d6dYfs7VmFb8iJqDPImQPWST40o5Gt65iqr9nHuF4eiJURiOdTQYlsBlSbwt2I93qMGG5NbIoznjxXflBM352/uuAhcPK2xpaLt62XhokPDtOAZ6ibBr1XcZoF2BxvWYFECwBDZA7B6Clw7CDHCTyiVLQNpFwwOh1SIkPhq+J+Z5007FU+YIzttPlF6vy6aqRlGrtb8IQt6IQEZzPmXqnAX40YHg4jQsNVp8b8Z5eEfPE6R4LXWNvnb1axf26rN0QsRt8bzeuejljWngWnQz+vmkNZYSHtuCmUuB4LKMrnU1gbozLWOmNdhVCBvtlbswFuU8oLm5zbUxuR2RjuyGGFrZMKcmZdEtWzMGy0E0exJBpYj66tV/yHWKnrAOx9qcEAnFquTke181k/EO7yFgE0rYipvONDr7eClSyVxfU/9H25SDLteZFPeYgUw1SqemoNkS1EzjvON3O5LxPIkEfufJnLXohn85B4lPGcvJyvWKyG/zseFHnHd7oSjVD3it2Ul4inI6Vu9bJI6uOeb9qa77zpvcF004x6FRekUIRD+D0m0YVy2NdRqh/MKT98= admroostendorp'
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCnGCW0EFi3eyPhAYYmzxXrpp/rRrZr/T2WSjp/T/RG38ZrYXS2phZ7oTyGNsR6pkjKMoNvO8J1Icj7CB/q3DHn+liuX0dXuvLGJtPDwzgq7aicb5tkoJ2MJeV2BYD047rpDqDPSmeQo2J4KLDu1b6s1Cls81PL/CpwHXsL6MLdOHTToRnvVEQahhsPKo2JVL0EWzZ+hkQW51/t4XIfoBLitrCIMf9vihcQUC0APbUQhZxFlXpAAtbpnhM9bSSfrO+G0cTa+EazBXYinaES6abp6kF0U4gKWHGjFzmKX5zpQqtFKH8eVSk+upCQDlmhOhIqmihESTrqG9lN4+pAU9cHLbD0Tau2K7yo+BuyWvD3YXLHn6UX6duNY5N8aBGmmePi67hQPie/M0ZAdEEqh9N5pa0XF0IdKWr/hTs/a0T83uxJsuEgMDU9wkngJRKxBeTdQlOPn2hdoac/BJjUXcu1zseEyMUOtc6iEiGfnIS1sTImhkqJBfFNNAoE4Dj65/U= foreman-proxy@clnp33509.cak-bz.local'
+
+  tomcat:
+    level: 'localservice'
+    gecos: 'User for Apache Tomcat' 
+    uid  : 2129
+  automator:
+    level: 'localservice'
+    gecos: 'User for Axway Automator' 
+    uid  : 2130
+
+  scpsplunk:
+    level: 'localservice'
+    gecos: 'scp user for splunk installation rpms' 
+    uid  : 2131
+    gid  : 2131
+    group: 'scpsplunk'
+    shell: '/bin/bash'
+
+  podman:
+    level: 'localservice'
+    gecos: 'podman user ' 
+    uid  : 2132
+
+  netpeers:
+    level: 'localservice'
+    gecos: 'netpeers user ' 
+    uid  : 2133
+
+  posit:
+    level: 'localservice'
+    gecos: 'posit user ' 
+    uid  : 2134
+
+  iambeheer_acc:
+    level: 'localservice'
+    gecos: 'serviceaccount IAM ACC'
+    uid:   2135
+    gid:   2135
+    group: 'iambeheer_acc'
+    shell: '/bin/bash'
+
+  iambeheer_prd:
+    level: 'localservice'
+    gecos: 'serviceaccount IAM PRD'
+    uid:   2136
+    gid:   2136
+    group: 'iambeheer_prd'
+    shell: '/bin/bash'
+
+  qlsagent:
+    level: 'localservice'
+    gecos: 'User for Qualys agent'
+    uid  :  2137
+    gid  :  2137
+    group: 'qlsagent'
+    shell: '/sbin/nologin'
+    homedirmode: '0700'
+    sudorules:
+      'root':
+        commands:
+          - 'ALL'
+  tm_dsa:
+    level: 'localservice'
+    gecos: 'Diep Shit user + group' 
+    uid  : 2138
+
+  otcc:
+    level: 'localservice'
+    gecos: 'user for podman cloudconnector' 
+    uid  : 2139
+    gid  : 2139
+
+  systemweb:
+    level: 'localservice'
+    gecos: 'user for systemweb' 
+    uid  : 2140
+    gid  : 2140
+    shell: '/bin/bash'
+
+  ap:
+    level: 'localservice'
+    gecos: 'user for access point' 
+    uid  : 2141
+#    gid  : 2141
+    shell: '/bin/bash'
+    groups:
+      - 'eessi'
+
+  jaeger:
+    level: 'localservice'
+    gecos: 'user for jaeger application' 
+    uid  : 2142
+    gid  : 2142
+    group: 'jaeger'
+    shell: '/bin/bash'
+
+#  eessi: <- see groups above
+#    level: 'localservice'
+#    gecos: 'dummy user to create group eessi' 
+#    uid  : 2143
+#    gid  : 2143
+#    shell: '/sbin/nologin'
+
+  kafka:
+    level: 'localservice'
+    gecos: 'user for access point' 
+    uid  : 2144
+    gid  : 2144
+    shell: '/sbin/nologin'
+    groups:
+      - 'eessi'
+
+  elasticsearch:
+    level: 'localservice'
+    gecos: 'user for elasticsearch' 
+    uid  : 2145
+    gid  : 2145
+    group: 'elasticsearch'
+    shell: '/sbin/nologin'
+
+  nds:
+    level: 'localservice'
+    gecos: 'user for idm IAM' 
+    uid  : 2146
+    gid  : 2146
+    group: 'nds'
+    shell: '/bin/bash'
+
+  splunkfwd:
+    level: 'localservice'
+    gecos: 'Splunk Forwarder' 
+    #homedir: '/opt/splunkforwarder'
+    #homedirmode: '0700'
+    shell: '/sbin/nologin'
+    uid  : 2147
+    gid  : 2147
+    #shell: '/bin/bash'
+
+  ########################################
+  # Ugly solution for AD serviceaccounts:
+  #   define them on the local system
+  #   anyway to have sudo rights etc.
+  ########################################
+  sa-mule-aq-wo:
+    level: 'localservice'
+    gecos: 'local re-definition of sa-mule-aq-wo'
+    uid  : 10010227
+    gid  : 10010227
+    shell: '/bin/bash'
+    sudorules:
+      'root':
+        commands:
+          - '/bin/systemctl start activemq'
+          - '/bin/systemctl stop activemq'
+          - '/bin/systemctl status activemq'
+  sa-mule-aq-wt:
+    level: 'localservice'
+    gecos: 'local re-definition of sa-mule-aq-wt'
+    uid  : 10010228
+    #gid  : 20011   # do not use remote group for local account definition
+    gid  : 10010228
+    # no non-default homedir if that is already a mountpoint! # homedir: '/opt/activemq'
+    shell: '/bin/bash'
+    admin-access:
+      - '%g-mg-mule-beheerders'
+      - '%g-mg-mule-ontwikkelaars'
+    sudorules:
+      'root':
+        commands:
+          - '/bin/systemctl start activemq'
+          - '/bin/systemctl stop activemq'
+          - '/bin/systemctl status activemq'
+  sa-mule-aq-wa:
+    level: 'localservice'
+    gecos: 'local re-definition of sa-mule-aq-wa'
+    uid  : 10010229
+    gid  : 1621 
+    shell: '/bin/bash'
+    admin-access:
+      - '%g-mg-mule-beheerders'
+      - '%g-mg-mule-ontwikkelaars'
+    sudorules:
+      'root':
+        commands:
+          - '/bin/systemctl start activemq'
+          - '/bin/systemctl stop activemq'
+          - '/bin/systemctl status activemq'
+  sa-mule-aq-wp:
+    level: 'localservice'
+    gecos: 'local re-definition of sa-mule-aq-wp'
+    uid  : 10010230
+    gid  : 1621
+    shell: '/bin/bash'
+    admin-access:
+      - '%g-mg-mule-beheerders'
+      - '%g-mg-mule-ontwikkelaars'
+    sudorules:
+      'root':
+        commands:
+          - '/bin/systemctl start activemq'
+          - '/bin/systemctl stop activemq'
+          - '/bin/systemctl status activemq'
+
+
+#  sa-mule-esb-wt:
+#    level: 'localservice'
+#    gecos: 'local re-definition of sa-mule-aq-wt'
+#    uid  : 10010232
+#    # do not add AD GID's here # gid  : 20019   # set ID for non-default primary group here
+#    groups:
+#      - gl-integratie-mft-tst
+#    #gid  : 10010232 # different group already defined in AD: gl-integratie-mft-tst re-defined above
+#    # no non-default homedir if that is already a mountpoint! # homedir: '/opt/activemq'
+#    admin-access:
+#      - '%g-mg-mule-beheerders'
+#      - '%g-mg-mule-ontwikkelaars'
+#    sshkeys:
+#      - 'ssh-rsa AAAAB3NzaC1ycjdiojdlndakldadljCZ5k1WJ/bao+3gfevRAQFkKkeotFY+fMVwd5bS0sn3AOGpsKAPnTkjghGbq30qaY6M6PZHTSJrLT1IykA2Zhc09NaAgbfCFQitAITsUpwgygZayWP7LYK2+CJzmkOlG0EkKyPggw3vOfc0NmHzogHVAVYoTOnsuB+gUA+zOGohSn8okCVeakbUgStcPlNPK0BYTa5jjZGeOYtR6baGpmEKUYOPPKWRR6SFq+FUFBpXBZN+eYSqEhcUJfTO9MABNMMlRH6fP2ZDKo0AtO90HJyxDdpEPdSkIvx/I6aM+4zlPs2Fcp6MP7l6nEiTKCkGzmPU1NEajVj0ie7Wk7WE0NRK8z332/boG02lK2v125qlBI6wTB5d9UvK3KUXmwr8wHFap4yp+QE/tMasg1KDEHg6D/CHczc3i7C39sm3W01y0/8fSmii9DA9tK+vJQCmS+ag5+aQIMjdVgnMZ++PXw3tV6wiIpEvqP7LF/Jl6ft2S2gW4toNURQWxD2eFa7ZuFyr67hP1LPn0m994hgHrwBDh2FyOqvS41+h7mXiPQAMcalkTkmur0JsRaBo6ezHnZrl3BKGsJB/G/FerEckJ9DVUlwJFTVYbfG9Iv1qpzwwmKAQ+7wDoI6DvfSpUkbrd10j/2nc7JI+PxhyMQC+lQS08JORSIEkru9jf6T41QM+fw== admjpoutre'
+
+
+  sa-mule-esb-wt:
+    level: 'localservice'
+    gecos: 'local re-definition of sa-mule-aq-wt'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1ycjdiojdlndakldadljCZ5k1WJ/bao+3gfevRAQFkKkeotFY+fMVwd5bS0sn3AOGpsKAPnTkjghGbq30qaY6M6PZHTSJrLT1IykA2Zhc09NaAgbfCFQitAITsUpwgygZayWP7LYK2+CJzmkOlG0EkKyPggw3vOfc0NmHzogHVAVYoTOnsuB+gUA+zOGohSn8okCVeakbUgStcPlNPK0BYTa5jjZGeOYtR6baGpmEKUYOPPKWRR6SFq+FUFBpXBZN+eYSqEhcUJfTO9MABNMMlRH6fP2ZDKo0AtO90HJyxDdpEPdSkIvx/I6aM+4zlPs2Fcp6MP7l6nEiTKCkGzmPU1NEajVj0ie7Wk7WE0NRK8z332/boG02lK2v125qlBI6wTB5d9UvK3KUXmwr8wHFap4yp+QE/tMasg1KDEHg6D/CHczc3i7C39sm3W01y0/8fSmii9DA9tK+vJQCmS+ag5+aQIMjdVgnMZ++PXw3tV6wiIpEvqP7LF/Jl6ft2S2gW4toNURQWxD2eFa7ZuFyr67hP1LPn0m994hgHrwBDh2FyOqvS41+h7mXiPQAMcalkTkmur0JsRaBo6ezHnZrl3BKGsJB/G/FerEckJ9DVUlwJFTVYbfG9Iv1qpzwwmKAQ+7wDoI6DvfSpUkbrd10j/2nc7JI+PxhyMQC+lQS08JORSIEkru9jf6T41QM+fw== sa-mule-esb-wt'
+    uid  : 10010232
+    shell: '/bin/bash'
+    sudorules:
+      'root':
+        commands:
+          - '/bin/systemctl start muleesb'
+          - '/bin/systemctl stop muleesb'
+          - '/bin/systemctl status muleesb'
+
+
+  ########################################
+  # data for remote administrator accounts
+  # admaccounts
+  ########################################
+  admjpoutre:
+    level: 'root'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCZ5k1WJ/bao+3gfevRAQFkKkeotFY+fMVwd5bS0sn3AOGpsKAPnTkjghGbq30qaY6M6PZHTSJrLT1IykA2Zhc09NaAgbfCFQitAITsUpwgygZayWP7LYK2+CJzmkOlG0EkKyPggw3vOfc0NmHzogHVAVYoTOnsuB+gUA+zOGohSn8okCVeakbUgStcPlNPK0BYTa5jjZGeOYtR6baGpmEKUYOPPKWRR6SFq+FUFBpXBZN+eYSqEhcUJfTO9MABNMMlRH6fP2ZDKo0AtO90HJyxDdpEPdSkIvx/I6aM+4zlPs2Fcp6MP7l6nEiTKCkGzmPU1NEajVj0ie7Wk7WE0NRK8z332/boG02lK2v125qlBI6wTB5d9UvK3KUXmwr8wHFap4yp+QE/tMasg1KDEHg6D/CHczc3i7C39sm3W01y0/8fSmii9DA9tK+vJQCmS+ag5+aQIMjdVgnMZ++PXw3tV6wiIpEvqP7LF/Jl6ft2S2gW4toNURQWxD2eFa7ZuFyr67hP1LPn0m994hgHrwBDh2FyOqvS41+h7mXiPQAMcalkTkmur0JsRaBo6ezHnZrl3BKGsJB/G/FerEckJ9DVUlwJFTVYbfG9Iv1qpzwwmKAQ+7wDoI6DvfSpUkbrd10j/2nc7JI+PxhyMQC+lQS08JORSIEkru9jf6T41QM+fw== admjpoutre'
+  admroostendorp:
+    level: 'root'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAgEAvtn7ewPCaQHvtUtCy9CeuQjzUwrKMKX2814P0lGGjk5tXOg8G1A5b7foOI3iuSVTI9lUzYvKnLNNByTMpHDpSH9F4pon/QLFkN0OLUWKT00d3d6dYfs7VmFb8iJqDPImQPWST40o5Gt65iqr9nHuF4eiJURiOdTQYlsBlSbwt2I93qMGG5NbIoznjxXflBM352/uuAhcPK2xpaLt62XhokPDtOAZ6ibBr1XcZoF2BxvWYFECwBDZA7B6Clw7CDHCTyiVLQNpFwwOh1SIkPhq+J+Z5007FU+YIzttPlF6vy6aqRlGrtb8IQt6IQEZzPmXqnAX40YHg4jQsNVp8b8Z5eEfPE6R4LXWNvnb1axf26rN0QsRt8bzeuejljWngWnQz+vmkNZYSHtuCmUuB4LKMrnU1gbozLWOmNdhVCBvtlbswFuU8oLm5zbUxuR2RjuyGGFrZMKcmZdEtWzMGy0E0exJBpYj66tV/yHWKnrAOx9qcEAnFquTke181k/EO7yFgE0rYipvONDr7eClSyVxfU/9H25SDLteZFPeYgUw1SqemoNkS1EzjvON3O5LxPIkEfufJnLXohn85B4lPGcvJyvWKyG/zseFHnHd7oSjVD3it2Ul4inI6Vu9bJI6uOeb9qa77zpvcF004x6FRekUIRD+D0m0YVy2NdRqh/MKT98= admroostendorp'
+  admcarlo:
+    level: 'root'
+    sshkeys:
+      - 'ssh-dss AAAAB3NzaC1kc3MAAACBAPCAQiT2J5fvFfeqA7WV4hXJe4Qt1Kmz1WaL8CrBISk4LK1BTDrwgGsHVc70vEs6//JJOFTb9002KlwhewLNXwJhvqaX1Z8Se/n2buP0IE9bO9cLYzmwkMqpc/vJMgvhHlek+AlS/J0FQcLmPkH6gVSBb2zPLRis7p2PLeyreJfRAAAAFQCHjOb+Ks9PaQujoer8bc6oexVQoQAAAIEAiVDTWhhD8sc6YRYJPwgMo1XG9yjKUO7dTLsCEnyAAIssQwaBcwe/nQxzssBjP3jGXWlD7w2teW0C3icT0Nr7zTTj2tD3/gki/PA6qe3PIX5qiRNVzhN77YOKfWgdDAalgdVlTz9Kyil57kelfRXYNs7ciRKlzabHDZajoV56p34AAACAJVYnmfGAUkFeJo/TmrLCTwjl/dep7jsVDEUwXM2c2Y3YnLs5hHd+ACFwMlMP80r9YQWsGuunI02VDC7P8WGW1XqojoUWQfxN3gUXgdN30vr1y/ZcgPBptQCp/bYmMV3M81Puge55VaUMaakSAR6yjsiJLKr9DDuaDK390V1MzDU= admcarlo'
+  # although the name contains nessus, this is not nessus but linux admin reporting. Also, since the account has been destroyed in AD it is a real Linux account now
+  sa-nessus-rap-linux:
+    #level: 'root' # replaced by key in team_linux::root_localservice_keys
+    level: 'localservice'
+    gecos: 'reporting service'
+    uid: 2113
+#    uid: 100062
+#    gid: domain_users
+    homedirmode: '0750'
+    shell: '/sbin/nologin'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAgEAvAKnxNfy3yQXoCWHdZ5nq8gHHMubVoVW6CNo37HgL/AyR/7n/NnjWHobbCNt/JDlDWtlRg2/VAudUmXMcI42ohrp3ADUmSAuc+HsC2eHIRYDlDvkboD0/ZSKNRWbuMD7lWlSFbKoLww0zm/jo+FbB78qIzVhZ2pkwEVYRTIFYqyxkyQL1pyzN3RrGWqenE85TC9cRwx5sknhE25AqHplEqYnYGRnH/mO+EVtmNF2m0w37kP6WD47LEkahOIveynqpZeMlPwNxoWNZN+qt4hkFcKMZtQmTnEGq/ZU2I+NA7eVZ9GBxC7+wtUIPICBndoO7E1FZe0w9qinEvJyikWAqDDJ7SxGzDsInMY1BNfB8fIlJi0zGIk1GmfvAlV2LIdR0DJUr1K4jm9TmKDOz/KZritGN7cpMQJ0n5X0XxHxixWlw9LsGv3xlbCyUTs7q+OgPFZKX75pI1EiomTveXRhOMGhGKL6Nhlq5VMCItoWYgQMBU4xqPg4d5lYNgU1s70CBhBZZwQhzmjQnQBUEhXZcDDZcVjBK6vJG8DP7zGaE8+JyG2A+kFL9CmHTkKt5pIVnjwIFDkEQP5TDYmsY9ov4uVWxr5J6cDI7924h5BSQxTALQPffb8M24//p9Kb6LidyVpYarcf6je5TwjI+ijtT4MJ7GCXy7aqWYAD8728OIM= SA-NESSUS-RAP-LINUX@clnpmgt1'
+  opentunnel:
+    level: 'localservice'
+    gecos: 'JNet Cloudconnector'
+    uid: 2114
+    shell: '/sbin/nologin'
+#    admin-access:             # replace with sudo su -l -s /bin/bash opentunnel
+#      - '%g-mg-linux-opentunnel'  # in role yaml!
+
+  # former administrator
+  admeimmers:
+    level: 'mortal'
+    sshkeys:
+      - ''
+      #- 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAxIwMBJv5jkuGXM0PFH6D2y16W+AD9Ij1dyW+khNCVP1lmksDANyH66C3KWd5Taq88dBHig4tlYbwtVa/tJkabnYSy/9Iy2gdOCQ49owMeIZaDiROlOEjRB8biC94zmlchECSmLtJNAjy+0dVkJur0dm9He7nkpuolKElU9Ht9Vm1SkaSBIRdbhChZhm0/8g0eFNUXD8lIVdZcOllAJMmDl6wFl8LqTO/M/6yPHZ88WXP9RHu8c/uLctULe6u0SU6k5A3SnLj/xCsZaHS15T2oFCD3ukzy0Bgd1cd0B9So/ugAcHyJawoQeOhelsf17hocr3Skums42JZ40XlLj1qLQ== admeimmers'
+
+  ########################################
+  #  Windows-beheer
+  ########################################
+  admwkamp:
+    level: 'mortal'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAlGzTUM4mU/VUnQMotwv2WZtvM2HzHMGIraMsM+ZGv7b+nb4sC0m+Eq2wlq7XUv7tnsWDSSsmtldVNnUh6ychLfQnWHCBbf6VPy7kkwDcM2fU2n/fjs4bv1huZIXhrYAwvgxS7ilax+LJdLF96ENg7SJsN4/kOi37/j+UArnLWZswUwer873bJl2D+vz7Yoi7EOe5NlHR8CI846LCm28S8DiKCbdB2Y3MWVqeEOPnwTLDiAU8BbQRYIWVd2hl/tgYc7oDzNMdsd7MwGrpXAYgVV98FfcvlTJC+g6re4Qfux2iOT0qWNUYhBEQ9DJHeTiTQYyn2T8KGnhTrbQG99MQ1w== admwkamp'
+  admhwit:
+    level: 'mortal'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAgEApiS4BLMC8gLSZcSNr5d3nYsSJOhBTYsUnUNB38ay18A4UM1x6s/V4EajZQLykCIoMrQMhp4gl8uL+hiYpPhwn+1CbiY3kaxAySgDTZKEXvYcDtsmcQEKR+9b1JkW0JhJJmmrTvjMbaKmGZkGgWWvjmhQtEyV0tUrqjrkUXoglPAacFm4aqrlMLcv4tz3ouwipVPryfTTNdHR18V9gFLDmqRfktBS7kfjasuWFyp5W3X/BXQgP9l9q44jrx9F8TWxinBc1DxVGbZ9Nslt/mli5Iv/QI6mWllRqtUIdoS/axGj5jaQztNZ7swmSR4X8WaqTiI+LDdkoLfUIVkmzbFKNDavtq5MIGyMxR6YLWSzAFP2tIFhhuxDgzHQfoHiWBotMjzl9Zqg74Umyr+j8cdw6pkymk9R2zCeuF4A8Df/C4OlpTcoD3YDJPp0+wePle0Zy50l8ZMPmRBPuVXPrPWQ5VQNMK0qZD5W1hlNS6hpDkaDKVLJDXcsyVc5wKH0APzJnz6LLNBqyRwQKhrIqa/0qxI6QDSiLNCBS+31zbE198MyGqUdo2gsBXA+2+/M5VNJUr3CQ69QoZg5VgBCc/0O0foV1+3v/P2Y+8g0Xy4F744lE6e1gJu2gWoa/OjKmIwN9FFkTmHM1ZEx1yiPuv2VRapi2TOC4ZWQZfa1naUjm7U= admhwit'
+  admraghten:
+    level: 'mortal'
+    sshkeys:
+      - 'ssh-rsa blablabla admraghten'
+  admmarc:
+    level: 'mortal'
+    sshkeys:
+      - 'ssh-rsa blablabla admmarc'
+
+  ########################################
+  # data for other remote users
+  ########################################
+#  sa-nessus-scan-linux:
+#    #since this account has been destroyed in AD it is a real Linux account now
+#    #level: 'mortal'
+#    level: 'localservice'
+#    gecos: 'former Nessus scan account'
+#    uid: 100058
+#    gid: domain_users
+#    sshkeys:
+#      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAgEAovdei5I9pRAlPSQJ4JhFZ4MEMrhYJ/VvZGXkJZ0FgAmvICplXF/bbND2HsaUP0OY+VKYhnNSSkn5goni74BM5ydNdyfOqjCXIhbEc8ArRs5712n43LL7MuzCi0oqpTIC0SNELJsnG7atDJSuBn9jgGEAx/yV3MUs5pyt7oJyuYChbzTwKpum0e4mxR5a647i2KIpRaN8GO313xwNmRjX0TchKYsGE32rSmI1b50S8RSpymWZ/9L+2IM3E3FbpO0QoJcvCe8Kl3WZL90ren9k7q7uza16CMuYnEvx7Wp8304v29CmjePJYDTWwR4TGgAk3EOIdD756V5/c647lmXWbneegocyF1VDmytrvpb91i6nVV9qQ9U+45c+fWjIT805JE2KCZqeWhZvRw/2aSRrEVPRcEz+2GduwGErokF3Z3ucIbkMuN3wUfpQmpH2vhwLiEJuYGz5u48C5jF/NFQFIEc7whFh4sfGkSaqSj0FNd43iLJxQPCnayAjDPkkb7aZNCpgTPhWfbuQiIr1rLLtIBSYWr3bHafzHaZz45iE3Mwmfu9pNy7uO3NS93LrPVpq+25kr7XaZiX3TL196SRUvMF+3lfFD72sHcsQS2VrSOIvvErzpNtkHxzkMt4hIrAff9CBTNf82AID0wcb6+hPWCV+FEtZhgjD7lzXaFQbF7U= sa-nessus-scan-linux'
+  admmnolles:
+    level: 'mortal'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQB4Tgcw4UBpIhZ3CSWU5LLblR3CoJRfHxg7srohLQBu9vBLYfZVLlYygcBdqiB3UQSFjd+I5d9NVN7PflX/FN06PN+OtG4OThGuvP72VfQs8TWdSYmfcU8UEgugF1FlIExts9ZwlEXyF0MEBFD4inZSeiJjI7ENdGt586RlbZFJE62b5GFC+Psk52ry/Vip/hB4fiLnN/zV24ds1iTuBft4ITJIMld650Egv74x/o61wRaPIhph51feGkZTf6fY8kVq+jRkvQMItJIMCU+u4bhEfUO8Z97T7xliIfYvjpO0DVj4fYUAMY9ShNQDK7rHY3YJekoMKadIS+NsCUC53V0b rsa-key-2048-admmnolles'
+      - 'ssh-dss AAAAB3NzaC1kc3MAAACBALn9l2o76dfO4InFYWJHx8bPs9DoIWvzQu89xvauFt3+pLjuTGkBjrZ5vgRmOaewUYqeb8hZ21Gogxx+N4jL9iX067daS0brCl2tVpOC97rv42SsKiZCOwRvMNKmcQcoWOcSsy6t671ZXe2yf+1NoLvNKc+haxKldy3b46HOfgufAAAAFQDayXGhC+dHXJhPeblfzgjVx+LaewAAAIEAmcOmVhzGyCqkNKsw4DbbKwsPlbyzFUcbDLCKO/vDrjwqYppexvGxkU0bf7XjY4nLo0BWGVDZzdPuN2CD0Npq3wjhu7nLTB/cNmbf5D4JrOGu9aNpeouNhxjjdZJjmZt6nzSyFeEmM+YZL9bFECzCjUcOn4zM+iDEsBeecW5I8LsAAACAIad3Qv6J8w6mJj70jT5sXm2bIZKb6ZFpkqoAZ1bMPvJoLHtUKPEfp0QkO6uPdVwP2tCq2kEn5tjp/SGrb6h1pBRIegFu24DndnCM+WC4mmqm6T4/oKgzL0bJ2ceCIfmtrB/kx9sX0rEGucCFJuCVW39NvGNlEup2PyHpx/xkesI= dsa-key-admmnolles'
+  admthenczyk:
+    level: 'mortal'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEA8JpeSCe6Ap//VbBimfmoVpvRmvis4ZCwcSuPXnevoogW5BTuh+A1N4eVZ+DLWQNyHlXrCx736N02fpDdS9LcxItM4adX2/SvJMg+l8NbEYfPjPZafZegg9YSOOPWFGQVEtV/RyA+SCmsL0TPGClcz/S6DLqb3KaWTHQh3okek2MP00r5Q0xueCYdPsia2dWGPMWFIQaEPRLuey+iPnS1kFRqJm/AXCA6r+w9AySTEY4XtiStJYM2GM3ultL53SZKEERnhWlKq4uXhuqJ09mM37mznVQQEL2/KaY85Z271Te+4kKKkr4XOv9gbNDBQmE66YjMFFnWklmSkswEQD8S7Q== admthenczyk'
+#  admdvrouwenfelder: # Disabled WA2211 0388
+#    level: 'mortal'
+#    sshkeys:
+#      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAxOO3UQOqnjy+HCATeEayrW1d2BqRTSF6TBoN75hn38nqDi5Kn0k6f5LZzb/mFss7G7T9h59DWI3tp9JV9dZ98Q0OdU6VC1nkUjKXxxZ8qASlFxP6ZmNVgKm3inFrdcX1Wts3TmHS2mjcFy6em7Car2Ep4hBbclBqa56JVQj/HeZFRaZVQcLhTz+AeeBNYVAsFB22ep+c+X9aVwx0sk3EJnoeM0bQvghCgGbQXrIFmNXK9rTbs/mY9RQgz+cjyiASYtZ1VWKZ9JoqS4mcke5A0frH99zvvof9knz16loUKlPi2Gqxch7gpEt98Ayp39zKnNa7gfUpFf9IDJF1z8F9Jw== admdvrouwenfelder'
+  admrveenstra:
+    level: 'mortal'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAscyWDfCqrNe3U7KOk4k5UM9KAp37KmauZbCtjgWKsGWUIyDKCEeMjXM6FIK9z7nMgCgv3USB/aA3I/5GQkYVNv8S1AkL5JY+Y3zGz7xYpmTDoR0R8CxnuV7dBgm3O2l7T7Jp7Acb9qE747B0YBo52uIC7Jxu3+O0E5q4D7cAkC/aGmys2hH7vbj3ewC2GZ6RwiW8G9gEVSU8383jw6KmoaZXkmrrwn4vdd9qaxh2i9Xhf6eTpYBFCirHraaLRAZmT4bjKw6O5xRwdHADEjL/ePJdw97wSj0kEJC9XWkk8/VHocChb2YTt2gD7oZxYyZFFJUNj566uhD4wXjuyc82Mw== admrveenstra@clnp32598.app.prd.cak-bz.local'
+
+
+  ########################################
+  # remote access for other teams
+  # ONLY if the are not in any 'team.yaml'
+  # see team_module
+  ########################################
+#  admmverschelling:
+#    level: 'mortal'
+#    sshkeys:
+#      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAlgNQoXCe1s33+upKKi+NcVGZjzs8+7PPBeoD0PQMxHFlkrplYqUf79jETROYKvBqr2qEOhusYWsz13NGvAgWEHYegqIyiaKOtrogKk2R2ToocU+GUm1VBcZ8rRLXnI+2UbM+VC7371mpy6nYYvVG34Dhda3LR2pAaxYHeWlHQembBmBC3M5WY53H2QBoFOv401oUCLYr9Emkd06NFoO/JUkVWK8nRPHM8rChIaz4htRyz2Vjlq1+91EMOsAeGQdB+FPDE14ra1hPB7IE1Ghv4BdNxEKaNDWSSl6qw+iWX03EpHW+r8FgytPTFMrukefoWUSzF25lpDxVl2Ao2+v93w=='
+#  admramond:
+#    level: 'mortal'
+#    sshkeys:
+#      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAmMVGAsMgXzOuOEPF1DG+VaGuINp8IYgl2u6pp6D3+bSmLScOmG8sK84TF4RiXOb97vlXVJS+JOEgd6AQjWthuSWOWBZ93FY+jXma7T104x4AZ+qOfhCU53qfSGVDsuoar/lHOGhshF66GC+SErxNT+pt31iGny65QfRLBUWrd8BqPPzexTzlJNFl1ehUz73Qf5bSS2ZIVdJAwmjTHFbpDe7m/Cr3kABvGuyVIvK30TJECCgnWb1aC8MjtbUbeuTpy6/NbnqBiS+hfAykt3YDWc/C9793FX04txI1I04ZrYGUaUVt9Z+g+NSVQEzcLyy7So47F7HHcjT1jQ2TCOZTSQ== admramond'
+#  admrtuit:
+#    level: 'mortal'
+#    sshkeys:
+#      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAl2LF37m0VoQb8nR49CYPhaBQBTVf1JHxuGXUGjWOy9ycwAdE9mqePWKQV8QUXzKHucCH3D5iBTFHOHz9Bbc/wjPUjpxUxtfpCOCuEgoyWGQ2eecMx9jGzy7x/sxFe4ywbUz4/ql7y0SwaxztjM0S83H/nJdCRXRLn252Hu8K7kLtNdOgsb8UwtsuOaPN/w9mGYX2P0aPzf8ujrqzUcPpC7Z/pPuF/BG1Az2+RSQCI5h5o1rWJoYQ1+z8labekawizVTOahrPTjPzy/9yTSidIADrsAXcLVgRDe1fa31vsPkMAJrZDBNEf4cqTTw684q90CLvRrhsOsjRmU8bA3jGTQ== admrtuit'
+  admjsolognier:
+#    level: 'mortal'
+#    sshkeys:
+#      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAwDxq9B9K0Gp6QtIutNXUyjH6h9QMWtXa+nhYpnufOATA5C3KLNebxO8cWoie7bSQcZng8Vd5EjH4laQsoouwScE499muajtt5oz5/+L93pwZCbiFwh/Fu3JR3ypxADgW0Nje+eGK8WK9R/h8INpTdBOmZ/r+iRjiZVvURo7TGsPU9VBWTTT9vqY4XZItewDCocKcC99NbLsHmOOmB4U+UR9dvjYwNzlifqPxS8hrxTvx3DfytT4Oe7VbsKXtpBRsUtvlq/b4Amh4KJD/KAOYac9yBMcJ8AAiPnRJkk3S/8kwe1+ERmZFkWuZ65y21mzpXEcpwaKUaVLRIHn+DQKIdQ== admjsolognier'
+
+  admwwesthuis:
+    level: 'mortal'
+
+  admpsudarsono:
+    level: 'mortal'
+
+  admroland:
+    level: 'mortal'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAgNRFDAsWHwkSNLYUdO+Xzo7txdzWIbwa6JMPU8ilDRtDVSmHCzyWuyv3AgRkhR7JFGZrPTc0NMvJunFZxxUQGeJSJ62Ycl8+Tfy3xZlmoDD0rsy4auCcrPSHS5Te+JnXexckXyHXw48efhz7sC3CW1OJhFUat+GMt3GOAN+GOcBRUFYX+A7+UQRm/LJD/CJWlkd/cvLR5CWhQpeX6dGeCDZMnjn6ODsfrxvId3YVZQOLZziyxwKHo7YuQCzF/yvpMxqfbLARCdNDEJekk+ipR1C/gsA/xo/+BqX0Sp1GmuuDISRPch3PepaDD9GA/8KrIgZUH/uXSUzRJspoYhMirw== admroland'
+  admtim:
+    level: 'mortal'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAIBg3qYlrnGP58B0vqgZGbmraAswrE5pVa2EroK6S6JWDkURv5GksUo9ZSG0iQe4kQglJ0Cksk2yhs7NtLgYoPNw2WQ1ZYuSYrJvY64DQs/t70QRT5rR0q0ctR0YHcUqRq6kA0eCwOoGtMX0WubfYYy6xhUMNzmTeDk4PRVFZg4Ujw== admtim'
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA43l1sQBIjoMC6wKUvMKRXfxxbciTEvan411kQpIAHEQEwJGtcFO9ijiSXs5XPGIW+nhZENEd2L8RXIDD1wi6+9VpFyBM2dx3WXelqyvzgzC9wR5fQWI6z4QLQo11kGbC93pYMTSRbuZhuB9WRa5xH9UimJNVO/OgpSETYiH+FcXhBs76vhIE+nm1o2xtRCbw  EU/pJdKBLjC4Sug3tvczpm576nrip3RyyziSOPpmr4YHqEZMc4l6hcInavfWyKnmUG60ggpnI4hlEcLu64fEGVjunarheZQF/WCEmsTXe0OX5uo1F8lApD0CdDvZzdW6KzuYbrG0Pl/reoPGZZWHxw== Key Pair Tim'
+  admstjintjauwwie:
+    level: 'mortal'
+  admkloekabino:
+    level: 'mortal'
+  admmarcel:
+    level: 'mortal'
+  admewien:
+    level: 'mortal'
+  admacengic:        # needed while clnp33170 needs to be native AD client
+    level: 'mortal'
+  admfklarenbeek:    # needed while clnp33170 needs to be native AD client
+    level: 'mortal'
+  admgwijnstroot:    # needed while clnp33170 needs to be native AD client
+    level: 'mortal'
+  admrhoop:          # needed while clnp33170 needs to be native AD client
+    level: 'mortal'
+
+########################################
+# Mount cifs: accountdata
+########################################
+team_linux::cifs_usr: 'SVR-SX-LINUX'
+team_linux::cifs_dom: 'cak-bz'
+
+########################################
+# Services, packages, ..
+########################################
+# default service states of services not managed elsewhere
+team_linux::services:
+#  puppet:    # moved to where it belongs manifests/profile/puppetagent.pp
+#    ensure: running
+  kdump:
+    ensure: stopped
+#  abrtd:
+#    ensure: stopped
+#  abrtd-ccpp:
+#    ensure: stopped
+#  abrtd-oops:
+#    ensure: stopped
+
+# default package install base
+team_linux::packages:
+  at:
+  #screen:
+  strace:
+  sudo:
+  curl:
+  wget:
+  vim:
+  tree:
+  telnet:
+  bind-utils:
+  # assume everything is RHEL >= 7 
+  nmap-ncat:
+  hdparm:
+# since this Puppet profile does not use yum, removing + depencencies does not work!
+#  abrt:
+#    ensure: purged # yum provider
+#    ensure: absent # rpm provider, only 1 package w/o depencencies
+
+
+########################################
+# Security related settings
+########################################
+# module blacklisting
+team_linux::module_blacklist:
+  floppy:
+  cramfs:
+  freevxfs:
+  jffs2:
+  hfs:
+  hfsplus:
+  squashfs:
+  udf:
+  dccp:
+  sctp:
+  rds:
+  tipc:
+
+
+
+########################################
+# other service specific parameters 
+########################################
+# number of days to retain syslog files
+team_linux::logrotate_retain_days: 32
+
+# mlocate / updatedb prune paths (do not scan)
+team_linux::mlocate_prune_paths:
+  - /afs
+  - /mnt
+  - /cdrom
+  - /tmp
+  - /usr/tmp
+  - /var/log
+  - /var/tmp
+  - /var/spool
+  - /proc
+  - /media
+  - /sys
+  - /net
+  - /sfs
+  - /var/cache/ccache
+  - /exports
+  - /etc/audit
+  - /etc/sudoers
+  - /etc/sudoers.d
+
+
+
+########################################
+# System mounts
+#   default filesystem mounting options
+########################################
+team_linux::systemmounts:
+  '/dev/system/root':
+    mountpoint: '/'
+    fstype    : 'ext4'
+    fsoptions : 'noatime,discard,nobarrier'
+  '/dev/system/home':
+    mountpoint: '/home'
+    fstype    : 'ext4'
+    fsoptions : 'noatime,discard,nobarrier'
+  '/dev/system/tmp':
+    mountpoint: '/tmp'
+    fstype    : 'ext4'
+    fsoptions : 'noatime,discard,nobarrier'
+  '/dev/system/var':
+    mountpoint: '/var'
+    fstype    : 'ext4'
+    fsoptions : 'noatime,discard,nobarrier'
+  '/dev/system/varlog':
+    mountpoint: '/var/log'
+    fstype    : 'ext4'
+    fsoptions : 'noatime,discard,nobarrier'
+  '/dev/system/varlogaudit':
+    mountpoint: '/var/log/audit'
+    fstype    : 'ext4'
+    fsoptions : 'noatime,discard,nobarrier'
+
+
+########################################
+# Sysctl module: common kernel parameters
+########################################
+team_linux::sysctl:
+  kernel.printk_ratelimit: 2
+  kernel.printk_ratelimit_burst: 1000
+
+
+
+########################################
+# Global audit rules
+########################################
+team_linux::auditd_rules:
+  'linux_000001':
+    - '# prevent excessive sucessfull open/unlink logging for user root'
+    - '-A never,exit -F arch=b64 -S open -S unlink -F uid=root -F success=1'
+    - '-A never,exit -F arch=b32 -S open -S unlink -F uid=root -F success=1'
+  'linux_000002':
+    - '# prevent audit of failed unlink,readlink and open by user root (puppet file ensure => absent)'
+    - '-A never,exit -F arch=b64 -S unlink -S readlink -S open -F uid=root -F success=0'
+    - '-A never,exit -F arch=b32 -S unlink -S readlink -S open -F uid=root -F success=0'
+#  'linux_000003': RHEL =< 7 only!
+#    - '# do not audit succesull time adjustment by user ntp'
+#    - '-A never,exit -F arch=b64 -S adjtimex -F uid=ntp -F success=1'
+#    - '-A never,exit -F arch=b32 -S adjtimex -F uid=ntp -F success=1'
+  'linux_000004':
+    - '# do not generate audit failures on failed lgetxattr and getxattr'
+    - '-A never,exit -F arch=b64 -S lgetxattr -S getxattr -F success=0'
+    - '-A never,exit -F arch=b32 -S lgetxattr -S getxattr -F success=0'
+  'linux_ansible-beheer':
+    - '# do not audit actions by Ansible Automation like patching'
+    - '-A never,exit -F uid=ansible-beheer'
+  'linux_000005':
+    - '# audit all read access to the audit log, excluding users root and zabbix'
+    - '-w /var/log/audit/ -pr -F uid!=root -F uid!=zabbix -k LOG_audit -F success=1'
+  'linux_000006':
+    - '# audit all failed access to /var/log/audit/'
+    - '-w /var/log/audit/ -k LOG_audit -F success=0'
+  'linux_000007':
+    - '# audit all access to the audit configuration'
+    - '-w /etc/audit/ -p wa -k CFG_audit'
+    - '-w /etc/sysconfig/auditd  -p wa -k CFG_auditd.conf'
+    - '-w /etc/libaudit.conf -p wa -k CFG_libaudit.conf'
+    - '-w /etc/audisp/ -p wa -k CFG_audisp'
+  'linux_000008':
+    - '# audit creation of special device files'
+    - '-a always,exit -F arch=b32 -S mknod -S mknodat'
+    - '-a always,exit -F arch=b64 -S mknod -S mknodat'
+  'linux_000009':
+    - '# audit mount and unmount operations'
+    - '-a always,exit -F arch=b64 -S mount -S umount2'
+    - '-a always,exit -F arch=b32 -S mount -S umount -S umount2'
+# need to override, stime is no longer a system call since rhel 7
+#  'linux_000010': # a bit silly, eventually replace by time out of sync Zabbix?
+#    - '# audit time changes'
+#    - '-a always,exit -F arch=b32 -S stime -S adjtimex -S settimeofday -k LOG_timeadjust'
+#    - '-a always,exit -F arch=b64 -S stime -S adjtimex -S settimeofday -k LOG_timeadjust'
+#    - '-a always,exit -F arch=b32 -S clock_settime -F a0=0x0 -k LOG_timeadjust'
+#    - '-a always,exit -F arch=b64 -S clock_settime -F a0=0x0 -k LOG_timeadjust'
+  'linux_000011':
+    - '# audit cron config'
+    - '-w /etc/cron.allow -p wa -k CFG_cron.allow'
+    - '-w /etc/cron.deny -p wa -k CFG_cron.deny'
+    - '-w /etc/cron.d/ -p wa -k CFG_cron.d'
+    - '-w /etc/cron.daily/ -p wa -k CFG_cron.daily'
+    - '-w /etc/cron.hourly/ -p wa -k CFG_cron.hourly'
+    - '-w /etc/cron.monthly/ -p wa -k CFG_cron.monthly'
+    - '-w /etc/cron.weekly/ -p wa -k CFG_cron.weekly'
+    - '-w /etc/crontab -p wa -k CFG_crontab'
+    - '-w /var/spool/cron/root -p wa -k CFG_crontab_root'
+  'linux_000012':
+    - '# auth files'
+    - '-w /etc/group -p wa -k CFG_group'
+    - '-w /etc/passwd -p wa -k CFG_passwd'
+    - '-w /etc/gshadow -p wa -k CFG_gshadow'
+    - '-w /etc/shadow -p wa -k CFG_shadow'
+    - '-w /etc/security/opasswd -p wa -k CFG_opasswd'
+  'linux_000013':
+    - '# audit security logs'
+    - '-w /etc/login.defs -p wa -k CFG_login.defs'
+    - '-w /etc/securetty -p wa -k CFG_securetty'
+    - '-w /var/run/faillock/ -p wa -k LOG_faillock'
+    - '-w /var/log/lastlog -p wa -k LOG_lastlog'
+    - '-w /var/log/tallylog -p wa -k LOG_tallylog'
+    - '-w /var/run/utmp -p wa -k LOG_utmp'
+    - '-w /var/log/btmp -p wa -k LOG_btmp'
+    - '-w /var/log/wtmp -p wa -k LOG_wtmp'
+  'linux_000014':
+    - '# audit network config'
+    - '-w /etc/hosts -p wa -k CFG_hosts'
+    - '-w /etc/sysconfig/network -p wa -k CFG_network'
+    - '-w /etc/sysconfig/network-scripts/ -p wa -k CFG_network'
+    - '-w /etc/issue -p wa -k CFG_issue'
+    - '-w /etc/issue.net -p wa -k CFG_issue.net'
+    - '-a always,exit -F arch=b32 -S sethostname -S setdomainname -k CFG_hostdomain'
+  'linux_000015':
+    - '# audit init system'
+    - '-w /etc/sysconfig/init -p wa -k CFG_init'
+    - '-w /etc/init/ -p wa -k CFG_init'
+    - '-w /etc/inittab -p wa -k CFG_inittab'
+    - '-w /etc/rc.d/init.d/ -p wa -k CFG_initscripts'
+  'linux_000016':
+    - '# audit shared library search paths'
+    - '-w /etc/ld.so.conf -p wa -k CFG_ld.so.conf'
+  'linux_000017':
+    - '# audit local time zone'
+    - '-w /etc/localtime -p wa -k CFG_localtime'
+  'linux_000018':
+    - '# audit kernel parameters'
+    - '-w /etc/sysctl.conf -p wa -k CFG_sysctl.conf'
+  'linux_000019':
+    - '# audit module configuration'
+    - '-w /etc/modprobe.d/ -p wa -k CFG_modprobe'
+    - '-a always,exit -F arch=b32 -S init_module -S delete_module -k CFG_modprobe'
+    - '-a always,exit -F arch=b64 -S init_module -S delete_module -k CFG_modprobe'
+    - '-w /sbin/insmod -p x -k CFG_modprobe'
+    - '-w /sbin/rmmod -p x -k CFG_modprobe'
+    - '-w /sbin/modprobe -p x -k CFG_modprobe'
+  'linux_000020':
+    - '# pam'
+    - '-w /etc/pam.d/ -p wa -k CFG_pam'
+    - '-w /etc/security/access.conf -p wa  -k CFG_pam'
+    - '-w /etc/security/limits.conf -p wa  -k CFG_pam'
+    - '-w /etc/security/pam_env.conf -p wa -k CFG_pam'
+    - '-w /etc/security/namespace.conf -p wa -k CFG_pam'
+    - '-w /etc/security/namespace.d/ -p wa -k CFG_pam'
+    - '-w /etc/security/namespace.init -p wa -k CFG_pam'
+    - '-w /etc/security/sepermit.conf -p wa -k CFG_pam'
+    - '-w /etc/security/time.conf -p wa -k CFG_pam'
+  'linux_000021':
+    - '# audit postfix configuration'
+    - '-w /etc/aliases -p wa -k CFG_aliases'
+    - '-w /etc/postfix/ -p wa -k CFG_postfix'
+  'linux_000022':
+    - '# screen configuration'
+    - '-w /etc/screenrc -p wa -k CFG_screen'
+  'linux_000023':
+    - '# audit ssh configuration'
+    - '-w /etc/ssh/sshd_config -p wa -k CFG_sshd_config'
+  'linux_000024':
+    - '# audit SSSD configuration'
+    - '-w /etc/sssd/sssd.conf -p wa -k CFG_sssd_config'
+  'linux_000025':
+    - '# audit sudoers'
+    - '-w /etc/sudoers -p wa -k CFG_sudoers'
+    - '-w /etc/sudoers.d/ -p wa -k CFG_sudoers'
+  'linux_000026':
+    - '# audit xinetd configuration'
+    - '-w /etc/xinetd.d/ -p wax -k CFG_xinetd.d'
+    - '-w /etc/xinetd.conf -p wax -k CFG_xinetd.conf'
+  'linux_000027':
+    - '# audit host domain modification'
+    - '-a always,exit -F arch=b32 -S sethostname -S setdomainname'
+    - '-a always,exit -F arch=b64 -S sethostname -S setdomainname'
+  'linux_000028':
+    - '# audit SELinux config'
+    - '-w /etc/selinux/ -p wa -k MAC_policy'
+  'linux_000029':
+    - '# audit ssh and scp invocations'
+    - '-w /usr/bin/ssh -p x -k SSH_invocation'
+    - '-w /usr/bin/scp -p x -k SCP_invocation'
+  'linux_aliases':
+    - '# audit /etc/aliases.db:'
+    - '-w /etc/aliases -p war -k watchaliases'
+    - '-w /etc/aliases.db -p war -k watchaliasesdb'
+  'linux_postfix':
+    - '# audit postfix/postmap/sendmail:'
+    - '-w /usr/sbin/postfix -p warx -k watchpostfix'
+    - '-w /usr/sbin/postmap -p warx -k watchpostmap'
+    - '-w /usr/sbin/sendmail.postfix -p warx -k watchsendmailpostfix'
+    - '-w /usr/sbin/sendmail -p warx -k watchsendmail'
+
+# zabbix user parameters / custom items for all nodes
+team_linux::zabbix_userparams:
+  custom.vmswap           : '/usr/bin/vmware-toolbox-cmd stat swap | cut -d\  -f 1'
+  custom.vmballoon        : '/usr/bin/vmware-toolbox-cmd stat balloon | cut -d\  -f 1'
+  #security_login   : 'sudo /sbin/aureport -ts recent -i -l --failed > /dev/null 2>&1 || { echo clean; $(exit 1); } && echo security_login'
+  custom.security_login   : 'sudo /sbin/aureport -ts recent -i -l --failed | egrep ^[0-9] | egrep -v "172.25.168.12|172.24.166.243|172.24.166.244" |wc -l >/tmp/zabbixaureport ; [[ $(cat /tmp/zabbixaureport) -ne 0 ]] && echo security_login || echo clean'
+  custom.security_account : 'sudo /sbin/aureport -ts recent -i -m --failed > /dev/null 2>&1 || { echo clean; $(exit 1); } && echo security_account'
+  custom.security_file    : 'sudo /sbin/aureport -ts recent -i -f --failed > /dev/null 2>&1 || { echo clean; $(exit 1); } && echo security_file'
+  custom.security_syscall : 'sudo /sbin/aureport -ts recent -i -s --failed > /dev/null 2>&1 || { echo clean; $(exit 1); } && echo security_syscall'
+  custom.min_scsi_timeout : '/bin/cat $(ls -1 /sys/class/block/sd[a-z]*/device/timeout) | /bin/sort | /usr/bin/tail -n1'
+  custom.audit_rate       : 'sudo /sbin/aureport -ts recent | grep "^Number of events" | cut -d\: -f2'
+  custom.audit_fail_rate  : "sudo /sbin/aureport -ts recent | grep failed | awk -F\\: '{sum += $2} END {print sum}'"
+  custom.iops_total       : "egrep 'sd[a-z]+ ' /proc/diskstats | awk '{sum = sum + $4 + $8} END {print sum}'"
+#  custom.rx_bytes         : "egrep '(eth[0-9]+|ens[0-9]+|eno[0-9]+|enp[0-9]+s[0-9]+)' /proc/net/dev | awk '{sum = sum + $2} END {print sum}'"
+#  custom.tx_bytes         : "egrep '(eth[0-9]+|ens[0-9]+|eno[0-9]+|enp[0-9]+s[0-9]+)' /proc/net/dev | awk '{sum = sum + $10} END {print sum}'"
+  custom.activemem        : "grep 'Active:' /proc/meminfo | awk '{print $2 * 1024}'"
+  custom.majorfaults      : "grep majfault /proc/vmstat | awk '{print $2}'"
+  custom.commitas         : "grep Committed_AS /proc/meminfo | awk '{print $2 * 1024}'"
+  custom.ldsoconf         : '/usr/lib/zabbix/externalscripts/check_ld.so.conf.sh'
+  custom.yumrepos         : "echo $(cd /etc/yum.repos.d/ && egrep -r '^metalink|^baseurl' * 2>&1|egrep -v 'cak-bz.local|hetcak.nl|gitlab.com|fedoraproject.org|redhat.com|zabbix.com|puppetlabs|nam.repo'|sed -e 's/.*grep://;s/: Permission/ Permission/'|cut -d: -f1|egrep -v 'ansible|automation-platform|posit-pro')"
+
+# see linuxbeheerscripts::zabbix_additional_userparams in other places like
+# linuxbeheerscripts/data/scripting.yaml
+# puppetdisabled   : "sudo /var/CAK/zabbix/scripts/puppetdisabled"
+
+#team_linux::dsmanager: 'clnp32869.cak-bz.local' # on premise
+# vs SaaS:
+team_linux::dsmanager: 'agents.workload.de-1.cloudone.trendmicro.com'
+team_linux::dsmurl: 'dsmUrl=.*trendmicro.com'
+team_linux::dsmport: '443'
+team_linux::ds_agent_options: '"tenantID:F1357C2B-C7B0-6A83-2482-4B73DC079B00" "token:B33D62C8-F5C6-0038-B02F-6F4865DBDBDF" "policyid:36" "groupid:34"'
+
+team_linux::qualysthreads: '10'
+
+team_linux::selinuxconf: 'enforcing'

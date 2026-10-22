@@ -1,0 +1,6 @@
+---
+#team_linux::root_login: true # required during installation
+team_linux::dnf_exclude: 'puppet-agent podman* ansible* containers-common containerd.io runc skopeo'
+
+team_linux::installqlsagent: false
+

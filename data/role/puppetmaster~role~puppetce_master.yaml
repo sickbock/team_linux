@@ -1,0 +1,31 @@
+---
+#team_linux::profile::prepare_pe_master::diskname: '/dev/sda' 
+team_linux::installdsa: false
+
+# Following package already declared in selinuxhomedirs.pp for all RHEL versions
+#team_linux::packages:
+#  policycoreutils-python-utils: # Note: package name differs for RHEL 7
+
+team_linux::accountdata:
+  zabbix:
+    sudorules:
+      'root':
+        commands:
+          - '/usr/lib/zabbix/externalscripts/obsolete_enc.sh -r'
+          - '/usr/lib/zabbix/externalscripts/obsolete_hiera.sh -r'
+          - '/opt/puppetlabs/bin/puppetserver ca list *'
+  vro-plugin:
+    sshkeys:
+      - 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAWzn/isvmoKVA1+l6JiwopkAPYAl+p4QmmaFuvbkc2K vro-plugin@puppet'
+    groups:
+      - 'puppet'
+
+team_linux::localserviceaccounts:
+  vro-plugin:
+
+team_linux::ssh_access:
+  - 'vro-plugin'
+
+team_linux::zabbix_userparams:
+  custom.nodnscerts: "thishost=$(/usr/bin/hostname -f); for host in $(/usr/bin/sudo /opt/puppetlabs/bin/puppetserver ca list --all --format json|jq -r .signed[].name|/usr/bin/grep -v ${thishost}); do [[ \"$(/usr/bin/dig ${host} +short)X\" == \"X\" ]] && { echo -ne \"${host},\" ;}; done"
+

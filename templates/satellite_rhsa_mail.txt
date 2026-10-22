@@ -1,0 +1,111 @@
+#!/bin/bash
+
+
+
+ORG="${ORG_NAME}"
+
+REPO_ID="${REPO_ID}"
+
+
+
+BASE_FILE="/var/tmp/important_errata.txt"
+
+NEW_FILE="/var/tmp/new_important_errata.txt"
+
+
+
+# Ensure files exist
+
+touch "${BASE_FILE}"
+
+: > "${NEW_FILE}"
+
+
+
+# Get last successful repository sync time
+
+LAST_SYNC=$(hammer repository info \
+
+  --id "${REPO_ID}" \
+
+  --organization "${ORG}" \
+
+  | awk -F': ' '/Last Sync:/ {print $2}')
+
+
+
+if [[ -z "${LAST_SYNC}" ]]; then
+
+  echo "ERROR: Unable to determine last sync time"
+
+  exit 1
+
+fi
+
+
+
+LAST_SYNC_EPOCH=$(date -d "${LAST_SYNC}" +%s)
+
+
+
+# Iterate over Important and Critical security errata
+
+hammer erratum list \
+
+  --organization "${ORG}" \
+
+  --type security \
+
+  --order "issued desc" \
+
+  --per-page 1000 | \
+
+awk '{print $1}' | grep '^RHSA' | while read -r ERRATUM; do
+
+
+
+  INFO=$(hammer erratum info \
+
+    --id "${ERRATUM}" \
+
+    --organization "${ORG}")
+
+
+
+  SEVERITY=$(echo "${INFO}" | awk -F': ' '/Severity:/ {print $2}')
+
+  ISSUED=$(echo "${INFO}"   | awk -F': ' '/Issued:/ {print $2}')
+
+  TITLE=$(echo "${INFO}"    | awk -F': ' '/Title:/ {print $2}')
+
+
+
+  [[ "${SEVERITY}" != "Important" && "${SEVERITY}" != "Critical" ]] && continue
+
+
+
+  ISSUED_EPOCH=$(date -d "${ISSUED}" +%s)
+
+  [[ "${ISSUED_EPOCH}" -le "${LAST_SYNC_EPOCH}" ]] && continue
+
+
+
+  LINE="${ERRATUM} | ${SEVERITY} | ${ISSUED} | ${TITLE}"
+
+
+
+  # Only record if not already present
+
+  if ! grep -Fxq "${LINE}" "${BASE_FILE}"; then
+
+    echo "${LINE}" >> "${BASE_FILE}"
+
+    echo "${LINE}" >> "${NEW_FILE}"
+
+  fi
+
+
+
+done
+
+

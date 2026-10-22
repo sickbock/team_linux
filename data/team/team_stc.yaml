@@ -1,0 +1,49 @@
+########################################
+# Default users and groups for the roles
+# belonging to this team
+# WARNING: never leave a parameter empty
+########################################
+#team_linux::usergroups:
+
+#team_linux::localserviceaccounts:
+
+team_linux::team_stc_members:
+  - 'admramond'
+  - 'admrtuit'
+
+# Tijdens inrichting root rechten
+team_linux::sudocmd:
+  'admrtuit':
+    root:
+      - '/bin/su - root'
+
+# Sudo user(s) for all nodes administered by the team
+#team_linux::team_stc_sudouser: 
+#  - 'novlua'
+
+# sudo user(s) per node role for the team - if any:
+team_linux::iam_iga_sudouser:
+  - 'novlua'
+  - 'root'
+
+# any other mortals with SSH access?
+#team_linux::ssh_access:
+
+# any local accounts that have SSH access?
+#team_linux::ssh_svcaccounts:
+
+
+########################################
+# SSH keys for team_stc
+########################################
+team_linux::accountdata:
+  admramond:
+    level: 'mortal'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAmMVGAsMgXzOuOEPF1DG+VaGuINp8IYgl2u6pp6D3+bSmLScOmG8sK84TF4RiXOb97vlXVJS+JOEgd6AQjWthuSWOWBZ93FY+jXma7T104x4AZ+qOfhCU53qfSGVDsuoar/lHOGhshF66GC+SErxNT+pt31iGny65QfRLBUWrd8BqPPzexTzlJNFl1ehUz73Qf5bSS2ZIVdJAwmjTHFbpDe7m/Cr3kABvGuyVIvK30TJECCgnWb1aC8MjtbUbeuTpy6/NbnqBiS+hfAykt3YDWc/C9793FX04txI1I04ZrYGUaUVt9Z+g+NSVQEzcLyy7So47F7HHcjT1jQ2TCOZTSQ== admramond'
+  admrtuit:
+    level: 'mortal'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAl2LF37m0VoQb8nR49CYPhaBQBTVf1JHxuGXUGjWOy9ycwAdE9mqePWKQV8QUXzKHucCH3D5iBTFHOHz9Bbc/wjPUjpxUxtfpCOCuEgoyWGQ2eecMx9jGzy7x/sxFe4ywbUz4/ql7y0SwaxztjM0S83H/nJdCRXRLn252Hu8K7kLtNdOgsb8UwtsuOaPN/w9mGYX2P0aPzf8ujrqzUcPpC7Z/pPuF/BG1Az2+RSQCI5h5o1rWJoYQ1+z8labekawizVTOahrPTjPzy/9yTSidIADrsAXcLVgRDe1fa31vsPkMAJrZDBNEf4cqTTw684q90CLvRrhsOsjRmU8bA3jGTQ== admrtuit'
+
+team_linux::disable_firewalld: true

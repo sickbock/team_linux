@@ -1,0 +1,60 @@
+---
+team_linux::rsyslogserver: 'clnp32922.cak-bz.local'
+
+team_linux::rsyslog_msgfilter:
+  skip_pam_end_null_handle  : "$msg contains 'PAM pam_end: NULL pam handle passed'"
+  skip_systemd_nonsense1 : "$msg contains 'Failed to create session: Start job for unit user-'"
+  skip_systemd_nonsense2 : "$msg contains 'Failed to connect to API bus: Connection refused'"
+  skip_pcc_cpufreq : "$msg contains '/sys/module/pcc_cpufreq/initstate'"
+#  skip_oracle_perl_coredump : "$msg contains '(perl) of user 1500 dumped core'"
+  skip_oracle_coredump : "$msg contains 'of user 1500 dumped core'"
+  skip_oracle_command : "$msg contains 'oracle : command not allowed'"
+  skip_oracle_mail1 : "$msg contains 'fatal: oracle(1500): No recipient addresses found in message header'"
+  skip_oracle_mail2 : "$msg contains 'fatal: uid=1500: malformed input'"
+
+
+# need to override, stime is no longer a system call since rhel 7
+#team_linux::auditd_rules:
+#  'linux_000010': # a bit silly, eventually replace by time out of sync Zabbix? 
+#    - '# audit time changes'
+#    - '-a always,exit -F arch=b32 -S adjtimex -S settimeofday -k LOG_timeadjust'
+#    - '-a always,exit -F arch=b64 -S adjtimex -S settimeofday -k LOG_timeadjust'
+#    - '-a always,exit -F arch=b32 -S clock_settime -F a0=0x0 -k LOG_timeadjust'
+#    - '-a always,exit -F arch=b64 -S clock_settime -F a0=0x0 -k LOG_timeadjust'
+
+# some basic commands (like fuser) are not installed by default on RHEL7
+team_linux::packages:
+  at:
+  psmisc:
+  tmux:
+  lsof:
+  tcpdump:
+  #binutils: # overlaps with team_dba
+  strace:
+  #python36:
+  unzip:
+  mailx:
+#  sysstat:
+
+team_linux::joinad: false
+team_linux::ipaclient: true
+#team_linux::resolveconf: false
+#team_linux::mghostsf: false 
+
+#team_linux::ds_agent_version: '20.0.0-6313.el8'
+#team_linux::ds_agent_version: '20.0.0-1337.el8'
+team_linux::installdsa: true
+team_linux::installqlsagent: true
+
+#team_linux::zabbix_old: true # obsolete when profile zabbix_agent.pp obsolete!
+
+team_linux::accountdata:
+  oracle:
+    ulimits: null
+
+
+team_linux::zabbix_userparams:
+  custom.selinux: '[[ "$(getenforce)" == "Enforcing" ]] && echo 0 || echo 1'
+  custom.selinuxconf: '[[ "$(/usr/bin/grep -E "^SELINUX=" /etc/selinux/config)" == "SELINUX=enforcing" ]] && echo 0 || echo 1'
+  custom.selinuxdisabled: 'GEF="$(getenforce)"; SELCF="$(/usr/bin/grep -E "^SELINUX=" /etc/selinux/config)" ; selcf="${SELCF,,}"; [[ "${selcf:0:17}" == "selinux=disabled" ]] && { [[ "${GEF,,}" == "disabled" ]] &&  echo 1 || echo 0 ; } || echo 0'
+  custom.pkg_puppet: 'echo $(/usr/bin/rpm -q puppet-agent > /dev/null 2>&1; echo $?)'

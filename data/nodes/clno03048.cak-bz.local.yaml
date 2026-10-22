@@ -1,0 +1,4 @@
+---
+team_linux::mghostsf: true
+team_linux::resolveconf: true
+team_linux::nonrepopkgs_exclude: 'gpg-pubkey|katello-ca-consumer-.*.cak-bz.local|splunkforwarder|ds_agent|qualys-'

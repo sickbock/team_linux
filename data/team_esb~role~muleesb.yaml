@@ -1,0 +1,6 @@
+---
+team_linux::sudocmd:
+  '%g-mg-mule-beheerders':
+    root:
+      - '/usr/bin/mount *'
+      - '/usr/bin/umount *'

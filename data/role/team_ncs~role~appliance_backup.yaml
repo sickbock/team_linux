@@ -1,0 +1,10 @@
+---
+team_linux::localserviceaccounts:
+  netscp:
+
+team_linux::ssh_access:
+  - 'netscp'
+
+team_linux::packages:
+  mailx:
+

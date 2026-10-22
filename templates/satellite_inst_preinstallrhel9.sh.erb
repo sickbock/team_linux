@@ -1,0 +1,287 @@
+#!/usr/bin/bash
+################################################################################
+# Post VMWare-customization system preparation for RHEL 9
+################################################################################
+#SATELLITE=satellite.cak-bz.local
+SATELLITE=clnp33509.cak-bz.local
+AAPCTRL=clnp32989.cak-bz.local
+
+# Check if this host is already registered to something else than cdn.redhat.com
+[[ $(grep -E "^baseurl.*cdn.redhat.com" /etc/rhsm/rhsm.conf >/dev/null 2>&1 ; echo $?) -eq 0 ]] || \
+  { echo "host already registered" ; exit 9 ; }
+
+### cleanup just 2 be sure ###
+for i in $(ls /etc/yum.repos.d/*|grep -v redhat.repo)
+do
+  rm -f ${i}
+done
+dnf erase -y puppet-agent 
+dnf clean all
+rm -rf /var/cache/dnf/*
+rm -rf /var/lib/dnf/*
+rm -rf /etc/puppet*
+### cleanup just 2 be sure ###
+
+
+case $(hostname -s) in
+  clno*)
+    CFMENV=ontwikkeling
+    OTAP_ENV=O
+    #ACTIVATION_KEY="RHEL9-${OTAP_ENV}"
+    REGISTRATION () {
+    curl --silent --show-error   "https://${SATELLITE}/register?activation_keys=RHEL9-O&download_utility=curl&hostgroup_id=2&location_id=2&operatingsystem_id=1&organization_id=1&update_packages=false" --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo0LCJpYXQiOjE3NjQ5MzMyMzEsImp0aSI6IjliNTc2YjljNGI3MTA5YmZjNWUxY2QxZDM3ODNmNzdjYWNmNTRkMGJiYjBmMzExYmU1ZDFiYjYyNjc2ODBjZjEiLCJzY29wZSI6InJlZ2lzdHJhdGlvbiNnbG9iYWwgcmVnaXN0cmF0aW9uI2hvc3QifQ.pnwf4bXnScfdBGxFuiebRXqFqkqWypodXExHSrjp828' | bash
+    }
+    ;;
+  clnt*)
+    CFMENV=test
+    OTAP_ENV=T
+    #ACTIVATION_KEY="RHEL9-${OTAP_ENV}"
+    REGISTRATION () {
+    curl --silent --show-error   "https://${SATELLITE}/register?activation_keys=RHEL9-T&download_utility=curl&hostgroup_id=3&location_id=2&organization_id=1&update_packages=false" --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo0LCJpYXQiOjE3NzEyNTEzNDUsImp0aSI6IjFlMWQ1YTg5YWI2OTg5MmMyNjc5YTAwZDc0NmY2ZGY0ODgxOGFiZDZiZGU1NzBkOWRhODExODk3NzdkYjY3MmYiLCJzY29wZSI6InJlZ2lzdHJhdGlvbiNnbG9iYWwgcmVnaXN0cmF0aW9uI2hvc3QifQ.9rNf1ovuuynVltQ0w137yrVXP7nBr8gavd1oQ_ReZxA' | bash
+    }
+    ;;
+  clna*)
+    CFMENV=acceptatie
+    OTAP_ENV=A
+    #ACTIVATION_KEY="RHEL9-${OTAP_ENV}"
+    REGISTRATION () {
+    curl --silent --show-error   "https://${SATELLITE}/register?activation_keys=RHEL9-A&download_utility=curl&hostgroup_id=4&location_id=2&organization_id=1&update_packages=false" --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo0LCJpYXQiOjE3NzEyNTE2MDIsImp0aSI6ImI1NDVjODJjZGRkNzdhNWE1N2UyNzAwNzQwOGQ3MzA1ZGNkMjlhMDMzN2ZlNTk0NzYzOTVhYjExN2Y4ZjFlMTkiLCJzY29wZSI6InJlZ2lzdHJhdGlvbiNnbG9iYWwgcmVnaXN0cmF0aW9uI2hvc3QifQ.5f0_ELATGsx30iaKJ8wByPPbNdEDHfKqesL1V7i1IVs' | bash
+    }
+    ;;
+  clnp*)
+    CFMENV=productie
+    OTAP_ENV=P
+    #ACTIVATION_KEY="RHEL9-${OTAP_ENV}"
+    REGISTRATION () {
+    curl --silent --show-error   "https://${SATELLITE}/register?activation_keys=RHEL9-P&download_utility=curl&hostgroup_id=5&location_id=2&organization_id=1&update_packages=false" --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjo0LCJpYXQiOjE3NzEyNzE0NzMsImp0aSI6ImViZmVhYmIzMjBhYjdmNjg1ZjA5ZTYxYWI3ZmUyNmYyN2I2Mjc1MWViNjM2YjYzNjcyYzk3NTBhYmIwZmYwOGQiLCJzY29wZSI6InJlZ2lzdHJhdGlvbiNnbG9iYWwgcmVnaXN0cmF0aW9uI2hvc3QifQ.9Lyw8HCaCUjRLwJnH_dGCEr71T3fD6A3IcqxDYLHJPA' | bash
+    }
+    ;;  
+  *)
+    CFMENV=ontwikkeling
+    echo "Unknown environment based on hostname: $(hostname)"
+    REGISTRATION () {
+      ACTIVATION_KEY="RHEL9"
+      subscription-manager register --org="CAK" --activationkey="${ACTIVATION_KEY}" --force
+    }
+    ;;
+esac
+
+dnf -y erase katello-*
+dnf -y erase cloud-init
+dnf -y erase perl*
+rm -f /etc/sudoers.d/90-cloud-init-users
+/usr/sbin/userdel -r cloud-user
+
+dnf -y install http://${SATELLITE}/pub/katello-ca-consumer-latest.noarch.rpm
+egrep "hostname.*${SATELLITE}" /etc/rhsm/rhsm.conf || \
+  dnf -y install http://${SATELLITE}/pub/katello-ca-consumer-latest.noarch.rpm || \
+  { echo "Failed to configure Satellite via katello-ca-consumer package" ; exit 9 ; }
+
+#subscription-manager register --org="CAK" --activationkey="${ACTIVATION_KEY}" --force
+REGISTRATION 
+subscription-manager attach --auto
+subscription-manager refresh
+subscription-manager status
+subscription-manager list
+subscription-manager repos
+
+# https://access.redhat.com/articles/simple-content-access
+for i in  $(subscription-manager repos --list|awk '/Repo ID/ {print $3}') ; do subscription-manager repos --enable ${i}  ; done |tee -a ${LOG} 2>&1
+# Disable Elasticsearch repos to prevent mixup of versions; version is not in packagename!
+subscription-manager repos --disable CAK_Elasticsearch*
+
+# Starting with Satellite 6.11, use Satellite client instead of tools
+# https://access.redhat.com/solutions/6005561
+# enable latest available Satellite tools repository
+
+# Reeds werkend geinstalleerd op image #dnf -y install insights-client
+
+# To Puppet or not to Puppet?
+# For Puppet Enterprise: Download and execute the install script from the Puppet master:
+##curl -k https://<puppetmaster>:8140/packages/current/install.bash 2>&1 |bash 2>&1 | tee -a /var/log/install_puppet 2>&1
+# also  install 'at'
+
+# To Puppet or not to Puppet?
+# For Puppet Enterprise: don't upgrade puppet-agent from Satellite repo's
+##/usr/bin/sed -i 's/^exclude=.*/exclude=puppet-agent/' /etc/dnf/dnf.conf
+# at this stage, file still only contains a [main] section w/o exclude:
+###echo 'exclude=puppet-agent aziot-identity-service' >> /etc/dnf/dnf.conf
+echo 'exclude=aziot-identity-service' >> /etc/dnf/dnf.conf
+
+# To Puppet or not to Puppet?
+##/usr/local/bin/puppet agent --disable Install
+
+# create link for convenience
+mkdir /root/bin
+# To Puppet or not to Puppet?
+##ln -s /opt/puppetlabs/bin/puppet /root/bin/puppet
+
+dnf update -y
+
+[[ $(grep -ci NISDOMAIN /etc/sysconfig/network) -eq 0 ]] && echo "NISDOMAIN=ipaprod.hetcak.nl" >> /etc/sysconfig/network
+
+# Hard coded Kerberos configuration
+cat << EOF > /etc/krb5.conf
+includedir /etc/krb5.conf.d/
+includedir /var/lib/sss/pubconf/krb5.include.d/
+
+[libdefaults]
+  default_realm = IPAPROD.HETCAK.NL
+  dns_lookup_realm = true
+  dns_lookup_kdc = true
+  rdns = false
+  dns_canonicalize_hostname = true
+  ticket_lifetime = 24h
+  forwardable = true
+  udp_preference_limit = 0
+  default_ccache_name = KEYRING:persistent:%{uid}
+
+
+[realms]
+  IPAPROD.HETCAK.NL = {
+    pkinit_anchors = FILE:/var/lib/ipa-client/pki/kdc-ca-bundle.pem
+    pkinit_pool = FILE:/var/lib/ipa-client/pki/ca-bundle.pem
+
+  }
+
+
+[domain_realm]
+  .ipaprod.hetcak.nl = IPAPROD.HETCAK.NL
+  ipaprod.hetcak.nl = IPAPROD.HETCAK.NL
+  ${HOSTNAME} = IPAPROD.HETCAK.NL
+  .cak-bz.local = IPAPROD.HETCAK.NL
+  cak-bz.local = IPAPROD.HETCAK.NL
+EOF
+
+/usr/bin/authselect apply-changes
+
+# Hopefully, all RHEL 8 screw ups have been corrected?
+# if not, modify /etc/authselect/user-nsswitch.conf and create symbolic link
+# Try authselect and hope it works the first and only time:
+/usr/bin/authselect select sssd with-sudo with-mkhomedir --force
+/usr/bin/systemctl enable --now oddjobd.service
+
+# Hard coded Kerberos configuration
+HOSTNAME=$(hostname -f)
+cat << EOF > /etc/sssd/sssd.conf
+[domain/ipaprod.hetcak.nl]
+cache_credentials = True
+krb5_store_password_if_offline = True
+ipa_domain = ipaprod.hetcak.nl
+id_provider = ipa
+auth_provider = ipa
+access_provider = ipa
+ldap_tls_cacert = /etc/ipa/ca.crt
+ipa_hostname = ${HOSTNAME}
+chpass_provider = ipa
+ipa_server = _srv_, clnp32797.ipaprod.hetcak.nl, clnp32798.ipaprod.hetcak.nl
+dns_discovery_domain = ipaprod.hetcak.nl
+default_shell = /bin/bash
+override_shell = /bin/bash
+fallback_homedir = /home/%u
+override_homedir = /home/%u
+
+[sssd]
+services = nss, sudo, pam, ssh
+domains = ipaprod.hetcak.nl
+
+[nss]
+homedir_substring = /home
+
+[pam]
+
+[sudo]
+
+[autofs]
+
+[ssh]
+
+[pac]
+
+[ifp]
+
+[secrets]
+
+[session_recording]
+
+EOF
+
+chmod 0600 /etc/sssd/sssd.conf
+
+# Hopefully /etc/security/access.conf does not need modification
+
+# Hard coded IPA installation an configuration, ... just pray it works 
+/usr/sbin/ipa-client-install --hostname $(hostname -f) --domain ipaprod.hetcak.nl --realm IPAPROD.HETCAK.NL -p hostadmin -w gables-uAENtNJRfPDGV35-xi7WqWtan -N -U
+
+# Hopefully oddjob_mkhomedir will work:
+/usr/bin/authselect select sssd with-sudo with-mkhomedir --force; /bin/systemctl restart oddjobd
+
+# To Puppet or not to Puppet?
+
+#cat << EOF > /root/bin/helloworld.sh
+##!/usr/bin/bash
+#
+#echo "Hello world!" > /root/helloworld.txt
+#echo "          Yours ${SATELLITE}" >> /root/helloworld.txt
+#
+#EOF
+
+#chmod u+x /root/bin/helloworld.sh
+
+#ExecStart=/root/bin/helloworld.sh
+
+cat << EOF > /usr/lib/systemd/system/provisioning_callback.service
+[Unit]
+Description=Provisioning callback service
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStartPre=/usr/bin/curl --output-dir /usr/local/bin -O https://${SATELLITE}/pub/install/request_tower_configuration.sh 
+ExecStartPre=/usr/bin/chmod 0540 /usr/local/bin/request_tower_configuration.sh
+ExecStart=/usr/local/bin/request_tower_configuration.sh -s https://${AAPCTRL} -k -c  '94HWitFem,UHsuNDIS3P&EN' -t 117
+ExecStartPost=/usr/bin/systemctl disable provisioning_callback.service
+
+[Install]
+WantedBy=multi-user.target
+
+EOF
+
+systemctl enable provisioning_callback.service
+
+chcon -R -t bin_t /root/bin
+
+dnf -y install openvox-agent
+cat << EOF > /etc/puppetlabs/puppet/puppet.conf
+[main]
+server = clnp33260.cak-bz.local
+certname = $(hostname -f)
+usecacheonfailure = false
+runtimeout = 3600
+
+[agent]
+report = true
+graph = true
+strict_variables = true
+environment = ${CFMENV}
+runinterval = 900
+splay = true
+
+EOF
+
+/opt/puppetlabs/bin/puppet agent -t
+sleep 1
+/opt/puppetlabs/bin/puppet agent -t
+sleep 1
+systemctl enable --now puppet
+
+sed -i 's/.*PermitRootLogin.*/PermitRootLogin no/ig' /etc/ssh/sshd_config
+
+# For the time being, no host based firewall ... (depending on CIS hardening, Ansible management, .. this may change)
+systemctl disable firewalld
+systemctl mask firewalld
+
+# Exit 0 seems a signal picked up by VRA to reboot the system and declare the system installation complete?
+exit 0
+

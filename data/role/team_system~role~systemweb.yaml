@@ -1,0 +1,7 @@
+---
+team_linux::dnf_exclude: 'puppet-agent httpd* mod_ssl' # httpd-filesystem conflicts with mountpoints, chicken and egg problem!
+
+team_linux::packages:
+  nodejs:
+  python3.11:
+

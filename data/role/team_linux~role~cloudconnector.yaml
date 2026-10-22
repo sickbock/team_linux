@@ -1,0 +1,38 @@
+---
+team_linux::joinad: false
+team_linux::ipaclient: true
+
+team_linux::localserviceaccounts:
+  opentunnel:
+
+team_linux::packages:
+  java-1.8.0-openjdk.x86_64:
+
+team_linux::jnet_cloudcon_pkgs:
+  jnet-cloudconnector-1.8.1.el7.noarch.rpm:
+    isinstalled: '/etc/systemd/system/cloudconnector.service'
+
+team_linux::jnet_cloudcon_svc: '/etc/systemd/system/cloudconnector.service'
+
+team_linux::ssh_groups:
+  - 'g-mg-linux-opentunnel'
+
+team_linux::sudocmd:
+  '%g-mg-linux-opentunnel':
+    root:
+      - '/usr/bin/nc'
+      - '/bin/su -l -s /bin/bash opentunnel'
+      - '/bin/systemctl start cloudconnector'
+      - '/bin/systemctl stop cloudconnector'
+      - '/bin/systemctl status cloudconnector'
+      - '/bin/systemctl restart cloudconnector'
+      - '/bin/ls /var/log/cloudconnector'
+      - '/bin/less /var/log/cloudconnector/*'
+      - '/sbin/reboot'
+  opentunnel:
+    root:
+      - '/bin/systemctl start cloudconnector'
+      - '/bin/systemctl stop cloudconnector'
+      - '/bin/systemctl status cloudconnector'
+      - '/bin/systemctl restart cloudconnector'
+      - '/sbin/reboot'

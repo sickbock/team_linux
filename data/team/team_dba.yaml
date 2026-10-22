@@ -1,0 +1,166 @@
+########################################
+# Default users and groups for the roles
+# belonging to this team
+########################################
+team_linux::usergroups:
+  dba:
+  oinstall:
+
+team_linux::localserviceaccounts:
+  oracle:
+  appsync:
+#  ansible-dba:
+
+team_linux::sudodefaults:
+  appsync:
+    - '!requiretty'
+    - '!env_reset'
+
+team_linux::ssh_forwarding: 'yes'
+
+# W2008 1223 disable THP for all dba nodes
+team_linux::disablethp: true
+
+#team_linux::ssh_access:
+#  - 'admslatinovic'
+#  - 'admdgroot'
+#  - 'admraukes'
+#  - 'admpbulk'
+#  - 'admdhendriks'
+##  - 'admnjahangier'
+
+# team members (SSH acces, sudo rights, ..)
+team_linux::team_dba_members:
+  - 'admslatinovic'
+  - 'admdgroot'
+  - 'admraukes'
+#  - 'admpbulk'        # Disabled op verzoek MW dd 20200820
+  - 'admdhendriks'
+  - 'admrbakker'
+  - 'admramankoe'
+
+# Sudo user for all nodes administered by the team
+team_linux::team_dba_sudouser: 'oracle'
+
+# sudo user per node role for the team - if any:
+#team_linux::ebs_db_gridonly_sudouser: 'oracle'
+
+
+team_linux::ssh_svcaccounts:
+  - 'oracle'
+  - 'appsync'
+  - 'ansible-dba'
+
+
+########################################
+# SSH keys for team_dba
+########################################
+team_linux::accountdata:
+  admslatinovic:
+    level: 'mortal'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAgEA0LYy2wqh1zHE2z+ipGylMPtoALPspEKScCd14Xlt9P1q5ffm61RCpPI8OSCyUpmhSPKz3L7s51CHcy7PCFw/OKsANtNFUMDK6wTFSvMgR5eChAWroRf+goLN5oplrw58aF3PZyBS6vEgBAQLvBGi821XTaJohWgTssM7d/FXxmwaVsyXvP7TqaoShdI88uI89eHZgC0w6cfMtjDN4TJKbWDSPN6tDMJ4DqN4nInBPYkHf7QpoQxFey1XpGTrxk0bZRVQF3my7lZXuZkPMhu8Ivd+cpveBfPQQkrSyInHdGpS4W+JVKZNSSeGwQeFoMw0E2xMdsAmcrtHTRUmGoFISP3sKlhBDck0JCqhaZLTdipgT9CsbGEltSEFS7+/GAEzZITMUhq15Gdku6HDJBXseM2x2C40EyalwfZab9s8pihjMRxCOhvNU1k7Ht01/XljxFbeAWU3/meQZcV719gI8QGAvHaxUWZ1cEqDlFA/9mRI4Y8q0fMnTxSEl5xCV4ZJSTUVK1ZYQWDDDdZIrxBjzi1ImrLHsQKBc47h7Fh9g/6bb+optT9tjM3MTotopwQ1NjY2EWxqYO7fQtbOClX0KYzM3TTxn2ynkuEjzIZiNjwCU7Jx9uyNlk1oy1eA12mjSAt7G5eVkttEwsij03IPbTYKzOnM7sxjxX3ZDfsYm+k= admslatinovic'
+  admdgroot:
+    level: 'mortal'
+    sshkeys:
+      - 'ssh-dss AAAAB3NzaC1kc3MAAACBAPkkpQGn+WSEk0iE94bfEiA1OaF5gHxaeI3SBXG/Nbt+pOnEnz44UjFenOQr1ALYYSP55YWlbhE+RFMqDJuU0J8F0bF2JANPRQlplAB0slZtuVf3JHaK0nycGy+e8Toe+ILhTNsm1MZ6tqsbldEu4r4oCiZ2xV/zkmWqA4uo/TJfAAAAFQCiCs3iUD5OVthtSszKBrL9EkkYAwAAAIEA7ja6i9HjbuYGAseBpITiuVlXuqW5m0LFYwvn/0BPqzC/Rt6olfcsxyNFqL6uQLOwRi/WgFgXZyuQqj7uk1kJv4B49XczC/BrRmqUV7TGLbPipH+l0eph6SKjo1kpCE6SZ6gcCWSORdBReGSQlGOvyGyPwmX1yH7KZfvm2VbjpWwAAACASP8JSbTXXSUAdGdqr0m5ZiHXVNP9NGLKmCwb80Tre6kfXzJWYsoLw5NowgGR86dd2vpXPExwWbeHfMEfg1VgKNJ+Av4+CWF6J28v40zJ8M3HFjnwGJ/nQoN0k07Mlvo8lYIXWW4jExHwwhGr/Ziwrv3amqSpBn2zlP5qATjfFgk= admdaan'
+  admraukes:
+    level: 'mortal'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAgEAjVAI4hNCeF7qejlZt+9aawyrrez09xHcT6aEUvzm89AzKYmBZLwfQe+fMkMICCLpSGqxePJpZSTeXwKk3ch4gkHSDO7XWWEGgZe4cr8RVV6dV68zSrOuQgqWoilENs0iUj+eMnvilDwzsV/onkIHqML8eseSIybaGfIH8YWY6EeLtHOy0a3FEL6RB554QDoM7nh+IbFupr+LKc+P6z+h5xRhQF6jI9mPN2zojRvO8wpd4T7U2WfH5gEk10i60okI0JzpLE9bs/ob8gtx6e9aDmkkxGHpGFzVlqIdtZzTt6mO/VSPskqbaOsO78kdfsYjVEgFZqiG7enRas1uNT1m+OV7QnWWpCcOdHMQz3WpITkkSjcuZ+iLj+JWV7DxPB3v4TdDsXwtock4nVH9Ewwq3ctb2M1F8mLnCI5fKsSpJT17z2fq+/xytZfoxZFym/W42d/oM11pwWOG8DVEirsY5XaV7FXiPe2x+E1MFwlBsj0uUrxarzJ+KigXNp6TeAzw8yNlJ3fm3gpEwzUZQZCXTUHWaysx91liRaFHRFaNfOOOwa7GhGJCBIjly7ZTjdTPuZsputWRQ2Q2P7r9O8bPs0xRZuIhmFdfH2Rt5hVbaOQhXa/R1UJHJZIj7gym3heh6Wub0l4BclvWU6HlfWiS6L6SQm4om6qJiT6tSiaJyZM= admraukes'
+  admpbulk:
+    level: 'mortal'
+    sshkeys:
+      - ''      
+#      - 'ssh-dss AAAAB3NzaC1kc3MAAACBALrjryKkWzCaUIYD84wZPBXD/WnCv907ru1MSYFOt1/x66+wzKYFuY4AhpigWTRdVOLAXUYFP+oq0FTZUkXq6mVE+rOHPNDgepFG5q3/YlG8KlShMmK/lusmkQlersW+1Eczln03CR7HDi48ElIk/fysNIlkdFq7lv7yJjGJZZ/3AAAAFQDG8XLUkSTlQokxeoHKlDyuuamKnQAAAIBviIWHdbiqkeVFmm1LQib32bYi7j/huMmgZ9cPU1vtgjXm08dKMdVpp0jyXvvRNmzZH1TIyLpkgsv9a03SEf/IxlOEGkEmV57jqPzpF0OeHIoi2e0FA4ujcR3SL0WPzP4DclWIz/p7QpNpKugTexYsEWFJTJ2EQsv8ZFLm7xnkqAAAAIBISGB+sfwDhrSuf18tF1e/YmyGInpWGUaCrBPAf7GxeO9Apgapo2XCDtySugvz787IjL6zsVcA4gSn0oDt6yLJh6k4xUd8zGU2JL4AXeiwk0nZj4sIL+3Zn1gOT4OSDvk86vh81qE3Ei9NEPka+lYFvXlec11RA/DfAMi7cXBktQ== admpeter'        # Disabled op verzoek MW dd 20200820
+  admdhendriks:
+    level: 'mortal'
+    sshkeys:
+      - 'Comment: "rsa-key-20220302" AAAAB3NzaC1yc2EAAAABJQAAAQEAgm00omeWuoECccgKjMdfOkprrS3KjDFDdYNYi164sFKjcROxBxLqCxs0q2umrcLBjWHfGifAHerNqUwPzvaI8YfiMkKcYP2o5LOhMhshQB6z0E2BJHh5rf81sPebCs0iRRQqWZ1DXqRX3DZGpRHmYf86Q9ET+PF/+QrAk2lpba2cmp7OB1GD4GaXyquFgJ+wqpGGsrK7xv2qJo3yTguZmo+mmenLCsFtgn/x3abduAcqE+vuuif8taTBYoozb1Gy2FZwzhRW3OTp3FXnOE5NkCdEc1YqdiTHdy2FjgmudhK7QLbTEkkXPXJ08svdGcsIrwr7hB3LlSMGXRYk1ttclQ=='
+#      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAgm00omeWuoECccgKjMdfOkprrS3KjDFDdYNYi164sFKjcROxBxLqCxs0q2umrcLBjWHfGifAHerNqUwPzvaI8YfiMkKcYP2o5LOhMhshQB6z0E2BJHh5rf81sPebCs0iRRQqWZ1DXqRX3DZGpRHmYf86Q9ET+PF/+QrAk2lpba2cmp7OB1GD4GaXyquFgJ+wqpGGsrK7xv2qJo3yTguZmo+mmenLCsFtgn/x3abduAcqE+vuuif8taTBYoozb1Gy2FZwzhRW3OTp3FXnOE5NkCdEc1YqdiTHdy2FjgmudhK7QLbTEkkXPXJ08svdGcsIrwr7hB3LlSMGXRYk1ttclQ== rsa-key-20220302'
+#      - ''
+#      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAgEA0ulS4ZmXoOD5SLWbSAV2rcaU2E2tFQPd2hz9g6oRY9MZwJOg6LWGciVgQJAa3FY1r+TYMvBFki3xsbNaEciGWvyomfD5ZwXj13VEiTWFTc9ubw7zle4uq4ShuGlW99iQDhQ1FPMyycGIRYAwNctJd3HxFu3tlnFzTBdh3U9x4aRyUO/XsHD/M74jv48VyoePeapHwcIKruVhTPxrt78aw3u9Rpvx7v2TNTkZghvfCWKIBVxhZiPy9w1opLjNcVqwlt/qwIwccgouxX+yIIek308204qbsg9DldZ8NJreEiInZvG82wc7r/+Wk15ju7qAnb7ARLWzyoBG0YYSvMWF7xC0QFWBkZZjnkn+WQebfa6bkRDMbFhajggzwTLaker6CxGWCPX/AgrGSxwjiKvyako0QFc5jsns3YVaW8Q8Tr2Z9UPnFILp+2Ze3HZGqfYSNuC3zxy7ux3n8Wsz05e0wHqgeTe/v62hRpZ7KO2jfzSyyWGgEQnZhGcHxngz7lAVIHc3jrVWb2tz60TR0sCTVoytEidXaZYPXwLj1YLqg5+7o+I8zF7dsFyZTVhsWdQmunPdAzb3CH7Ix9S3G1dXSU9OsePUck5bIYlGXh8225BYRBLDY1rNgeUnDGAY1dMP2ZhvXj1IRoyJMYiCTbKqYi8l5t567SVnlrdfTwlkH0M= admdhendriks@git' 
+  admnjahangier:
+    level: 'mortal'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAx/HJ3rcRMFdPDXEhdRDSthVS4daC2ulvHtIbSyn55xW+PTZ/sIrmOJFzyzeUxcHdzw15kbhhzwzSqa7uzrRp/EFgELDOqrYnHROaXYdBoOPQyOvbboB9HgwdBuc8y4jnfTaw5qWF+HEfuUckjopAdssi2euwe5JQgFy41wcB2if4Qsdzc+U6ajrNIJMtmxMy6lH60UkWSeraGameGVQmOj+Iri3d1HbB+SQcug3eBfstVANcn860ULUzMQprlHNySlLVTfEdMT8LEc6z9Jgrl1bLh89dXmB32rOmNXMXz9caURxBSgJkWfOKrHsIxexDjdVIjDbdboKCWvqWmJ1hAQ== admnjahangier'
+  admrbakker:
+    level: 'mortal'
+    sshkeys:
+      - 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAgEAqm6jRoJCN36du43BRU2qonTJsKgl1XHhxk2h+HyZww2PmO+3EL4hImjKqTz8Gfsiz7JtNHZKQX4BubDNt0ZNddVOHMgr1Nw15fR2vdjts0sLTJg2LZ1K8FuBV9oMlJcNeJ1/0XTTE5b09tpRjpT/qHTfVcVIKaN3ffgynGBPy+iVfuaj/CIHK04KDjP1VbZaF12WCli86vlWzaKKXNvKlxrfiHENYD8a3elRorYY7VGz2pfdScuwpgJTSUPhm/NBZ8ksCSqQBxv1BxogudWo9QOhba6lRfeKJV5OU0rYkjRSPHQk/mXKygozGD/VOcELZGhQX5wMNRHs3N71+q8IhCGxcPNiZiKzqSawuQyEtm92Tp6EZk5w4tmd/OJ6brwF/mBIYs4iK8Kxq2CbT73Q0P1wD0V4SW1rGBehDXvW+ToQEveHxk2sEScAy1g4mx6uZPelZe5w6VY+osfhmzvYUDkZoD1bUTgyIaYCm/m7wJbGgQbIE17C4XTBvFnhDt40ojzCrVqPN8OChBHs4FUhRcvX6xvD5JmkripyCbZDx2FtnQrZmDj9zyXirnd6YZyb67fUzq1yoT2RZhTOR9/C5niqsbTgEtLlSRRKA640RXMMnhxgMyrbW4BvF0mAOdzRAg+e66/pzQM4XM/T8nGCv/PdBynlb/q+M1HfZIJQci8= admrbakker@steppingstone'
+  admramankoe:
+    level: 'mortal'
+    sshkeys:
+      - 'ssh-rsa no key'
+
+
+
+##################################################
+# Legacy sudo rules for non-team accounts
+##################################################
+team_linux::sudocmd:
+  zabbix:
+    oracle:
+      - '/var/CAK/oracle/scripts/zabbix_monitor.sh'
+  oracle:
+    root:
+      - '/usr/bin/su - root' # so everything below is legacy now ;-)
+      - '/usr/sbin/dmidecode'
+      - '/sbin/chkconfig'
+      - '/bin/mount'
+      - '/bin/umount'
+      - '/usr/local/bin/puppet'
+      - '/oraagent/agent/sbin/nmosudo'
+      - '/oracle/em/agent/sbin/nmosudo'
+      - '/etc/init.d/ohasd'
+      - '/oracle/software/product/12.1.0.2/grid_1/root.sh'
+      - '/oracle/software/product/12.1.0.2/grid_2/root.sh'
+      - '/oracle/software/product/12.2.0.1/grid_1/rootupgrade.sh'
+      - '/oracle/software/product/12.2.0.1/grid_2/rootupgrade.sh'
+      - '/oracle/software/product/12.2.0.1/dbhome_1/root.sh'
+      - '/oracle/software/product/12.2.0.1/dbhome_2/root.sh'
+      - '/oracle/inventory/orainstRoot.sh'
+      - '/oraagent/agent/core/12.1.0.5.0/root.sh'
+      - '/oraagent/agent/core/12.1.0.5.0/perl/bin/perl'
+      - '/oracle/software/product/12.1.0.2/grid_1/bin/acfsload'
+      - '/oracle/software/product/12.1.0.2/grid_1/bin/acfsload'
+      - '/oracle/software/product/12.1.0.2/grid_2/bin/acfsload'
+      - '/oracle/software/product/12.1.0.2/grid_1/bin/crsctl'
+      - '/oracle/software/product/12.1.0.2/grid_2/bin/crsctl'
+      - '/oracle/software/product/12.2.0.1/grid_1/bin/acfsload'
+      - '/oracle/software/product/12.2.0.1/grid_2/bin/acfsload'
+      - '/oracle/software/product/12.2.0.1/grid_1/bin/crsctl'
+      - '/oracle/software/product/12.2.0.1/grid_2/bin/crsctl'
+      - '/oracle/puppet/scripts/unpack-grid-12.2.0.1.sh'
+      - '/oracle/puppet/scripts/patch-grid-12.2.0.1.sh'
+      - '/oracle/puppet/scripts/install-db-12.2.0.1.sh'
+      - '/oraagent/agent13c/agent_13.3.0.0.0/sbin/nmosudo'
+      - '/oraagent/agent13c/agent_13.3.0.0.0/root.sh'
+      - '/oraagent/agent13c/agent_13.3.0.0.0/perl/bin/perl'
+      - '/oraagent/agent13c/agent_13.4.0.0.0/sbin/nmosudo'
+      - '/oraagent/agent13c/agent_13.4.0.0.0/root.sh'
+      - '/oraagent/agent13c/agent_13.4.0.0.0/perl/bin/perl'
+      - '/oraagent/agent13c/agent_15.0.0.0.0/root.sh'
+      - '/oraagent/agent13c/agent_15.0.0.0.0/sbin/nmosudo'
+      - '/oracle/puppet/scripts/reset_ddboost_3_5_lockbox.sh'
+      - '/oracle/puppet/scripts/reset_ddboost_19_8_lockbox.sh'
+      - '/oracle/software/product/12.2.0.1/grid_1/crs/install/roothas.sh'
+      - '/oracle/software/product/12.2.0.1/grid_2/crs/install/roothas.sh'
+  appsync:
+    root:
+      - '/opt/emc/appsync/acp'
+  'ansible-dba':
+    'oracle':
+      - 'ALL'
+    'root':
+      - 'ALL'
+
+# skip broken legacy ddboost ... 
+team_linux::rsyslog_msgfilter:
+  skip_ddboost3_5_1: "$msg contains 'Command exceeded timeout'"
+  skip_ddboost3_5_2: "$msg contains '/Stage[main]/Team_dba::Profile::Ddboost3_5/Exec[ddboost_3_5_lockbox'"
+
+
+team_linux::local0_filter:
+  - 'Oracle Audit'
+

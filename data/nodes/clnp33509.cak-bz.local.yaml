@@ -1,0 +1,3 @@
+---
+team_linux::szpulp: '2000G'
+team_linux::szpgsql: '25G'

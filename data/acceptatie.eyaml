@@ -1,0 +1,53 @@
+team_linux::root_password: >
+  ENC[PKCS7,MIIB2gYJKoZIhvcNAQcDoIIByzCCAccCAQAxggEhMIIBHQIBADAFMAACAQEw
+  DQYJKoZIhvcNAQEBBQAEggEAOQq4X8IKYitThqxo49VczexdN2ga42JruIk6
+  M6fv69d0KC/VIcA5/RW2bym69fJJerohl4tmPL+4fXDa94PfCFc0+Xn7VbVK
+  RoQX0feILLnMFH8Y6xwZnWOKNlbLJjlzpYT5ihNW0XD+CTvj0Mh4P2/7pORE
+  hL1OxlA+dxVdp4YxZOXjzVJNSf+GqFptRJW3Ac3PjZrgcpa8138U/R0adcvz
+  iEvvXjwA/7jVJaa8fNyP16lSl+T/TWoASUOy5uoFwhkh3TPur5H+89z4I7hi
+  QB+wgUCOX4HVnK63TSfZkciyqF1zRH8ngzKe0nRVNXdrGbbIwkveGTUnNgm1
+  I7NF2zCBnAYJKoZIhvcNAQcBMB0GCWCGSAFlAwQBKgQQEJEU2GUe+HYMM8Rh
+  6IvbjoBwH+n8Hkvwl7kGRYID9JkebyQnUO90PAfnRn9KPvUMKQ2qcSekioEI
+  mCNsBZRputE1DAiJrAr28qfhVpRGBE/dOOtm6hTvZo06EnCuwteMAe7tjxCM
+  FVsoJoj39/73c/xeLWsRbkU8E/RjcqwMyQX/1g==]
+
+team_linux::accountdata:
+  oracle:
+    password: >
+      ENC[PKCS7,MIIB2gYJKoZIhvcNAQcDoIIByzCCAccCAQAxggEhMIIBHQIBADAFMAACAQEw
+      DQYJKoZIhvcNAQEBBQAEggEAUFC0dmHLfDLKysJiMz7yMBkyxxR/RWjyqouh
+      uF9DnN4RDb9LgfGCq5YCDcVU43BgeJIysACc/edUw3b3MyeQlsBHJqcX24Kb
+      q3ijK3Snfr3TTLwBqN2Tn4YsZiimqc8LIXKobYfOvUt9wijNiy+6eRlGLJGW
+      s/eOxAxW9qz1+atFnomB18zlr+p9ohGX5W5FNISMGW/70Lr5XDx7EGxq0Ig9
+      w4T7W+5kePhW1OvCU2TNyJsSmXJ0aogfgqHlZupQ+u9BCDLbiamGb91vVXkv
+      k0+r5VLJg/aYQ4qYM0d+XAvlerwppDo14MhqkXHhowZyKeZ3xIF41JIsUpvL
+      Eo1twjCBnAYJKoZIhvcNAQcBMB0GCWCGSAFlAwQBKgQQFVyfgY+kB8z/NV2t
+      RbI2m4BwfjUugY9lAgIpnkPvnAGGldYHe1PcnWW5g03DCMcVgphbu/Np+E5C
+      znNYXvxUCYkfuix9C1fMN3MjW5W20VBdv0++fELXq4lJwPud9rSBLHdi89y1
+      wcuvD5g+gnqSCfhWUHWx1RkwhjA/L88xlZY+ag==]
+  qualysscan:
+    password: >
+      ENC[PKCS7,MIIB2gYJKoZIhvcNAQcDoIIByzCCAccCAQAxggEhMIIBHQIBADAFMAACAQEw
+      DQYJKoZIhvcNAQEBBQAEggEArkViyie1kwjEvyje6NfPYStCZYJrq8VDL4K9
+      6Mqt49s2ZgmmQceL4lWdZr8KfFxmO3VPiO4f+IYElyw7txY/xuojZg3n0fjE
+      Uwlt6HkjG7TQKMmAQ+P5rPo2ZmUMlg2k7X/9ue988RPim3LuDPXFRwViEmF1
+      Zu17z8Tc+kYZRJit0mfCAbo7q8iO7+dIlMg7QFSkGigaDAIsBiNG6TAIXvC2
+      f2a5jlXKLekEf1PtjUxHLAdvl+A+ayEMHc2++59YBMvj3UO4+sSFU/SXArNy
+      iU9pRs6Mg2UiQerzavq967Yl2G/Bx3XWa6aPA8isi5U4F04rTb9FnhaKsLRV
+      8IxW0zCBnAYJKoZIhvcNAQcBMB0GCWCGSAFlAwQBKgQQUjpHyCt2nQWPcWXl
+      x4IcOoBw/Il0+2CBA1bqyldLGJTvly5aOmcxKc0jfwormO5leMS8BUF5q9hn
+      oFCd15N96R/0f2P0r+8JGIJv1JgTl+0jOtKP0u0FLQBAmrZLiezEqcBNffC+
+      lRYMGaEcZYhpplVT1IXvA/uP7fxAddkcYruoPQ==]
+  sa-mule-aq-wa:
+    password: >
+      ENC[PKCS7,MIIB2gYJKoZIhvcNAQcDoIIByzCCAccCAQAxggEhMIIBHQIBADAFMAACAQEw
+      DQYJKoZIhvcNAQEBBQAEggEAULuM8apBn6tTCwyJr2QMjXHI4nwBLi98Y5sa
+      UFDftld0kNWI15FlbMlpfU4rES60gj2wpRTuUOEr71AWqwmW7eLRATLzZQoC
+      pEAEf6muMKN+88vPE1KNVLKweF9JCotWDd4uRFwIa/ujZa0GoPHVlj7gC0Mk
+      jY0UWCBC3unFtimW4Vd9CepJtSnpPEnuR7KjG0K7bu8vbIKf1xmiT40Ze0av
+      Skq9Jj+3RY3uV57k+HgiV6hzauGrI5D3mtCywA5BZkyOeNoOrz35ZprkBiQO
+      ZkfkWPfQkx4eub6gH3cJPq39/XP/KIOlcRwdJ2elE7jXG3qNOl1Wpklvj/O/
+      NpfFljCBnAYJKoZIhvcNAQcBMB0GCWCGSAFlAwQBKgQQBmioPXI3vQrLAuWT
+      ksLsJIBwM3C6M+WKdImGByQ7GlPyYl+nn1jtnzr0xrFOnsVnfxgHdzq2+7Kt
+      d+cajkqQnc3lhNENiie66ICCjDXh52IAG6PnvDem6Q+iEhU/EIipx7/zPMrf
+      Se/C1GQyOGqThYShEhYeqy/2m4QMMJMqNm/x5A==]

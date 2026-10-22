@@ -1,0 +1,11 @@
+*.swp
+.*.swp
+*.orig
+.*.orig
+*.backup
+.*.backup
+*.patch
+*.temp
+*.te_doen
+.idea/
+.idea/**

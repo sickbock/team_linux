@@ -1,0 +1,6 @@
+---
+team_linux::localserviceaccounts:
+  podman:
+
+team_linux::rsyslog_maxmsgsz: '64k'
+

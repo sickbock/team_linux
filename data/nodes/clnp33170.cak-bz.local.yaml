@@ -1,0 +1,26 @@
+---
+team_linux::joinad: true # needed while Kerberos is broken by lack of design
+team_linux::ipaclient: false
+
+team_linux::root_login: true
+
+team_linux::ssh_access: # members of group g-mg-ansible-prd-developers
+  - 'admacengic'
+  - 'admfklarenbeek'
+  - 'admgwijnstroot'
+  - 'admrhoop'
+
+    #team_linux::accountdata:
+    #  'admacengic':
+    #    sudorules:
+    #      'root':
+    #        tags: 'NOPASSWD:SETENV:'
+    #        commands:
+    #          - '/bin/su -'
+team_linux::sudocmd:
+  'admacengic':
+    root:
+      - '/bin/su -'
+
+team_linux::installdsa: false
+team_linux::installqlsagent: false

@@ -1,0 +1,13 @@
+#!/bin/bash
+# chkconfig: 345 01 99
+# description: Disable Transparent Huge Pages (THP) as decreted by Oracle following Document 361323.1
+# processname: thp
+
+<%- if @osfamily == 'RedHat' and @facts['os']['release']['major'] < '7' -%>
+echo never > /sys/kernel/mm/redhat_transparent_hugepage/enabled
+echo never > /sys/kernel/mm/redhat_transparent_hugepage/defrag
+<%- else -%>
+echo never > /sys/kernel/mm/transparent_hugepage/enabled
+echo never > /sys/kernel/mm/transparent_hugepage/defrag
+<%- end -%>
+

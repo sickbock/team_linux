@@ -1,0 +1,21 @@
+---
+team_linux::localserviceaccounts:
+  deletenodes:
+  vro-plugin:
+  scpsplunk:
+
+team_linux::accountdata:
+  vro-plugin:
+    sshkeys:
+      - 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAWzn/isvmoKVA1+l6JiwopkAPYAl+p4QmmaFuvbkc2K vro-plugin@puppet'
+
+team_linux::installdsa: false
+team_linux::installqlsagent: false
+
+# Insights: Redis performance decreases when Transparent Huge Pages is enabled
+team_linux::disablethp: true
+
+team_linux::zabbix_userparams:
+  custom.notcheckedinlast4hours: "/usr/bin/sudo /usr/bin/hammer --no-headers host list --fields Name --search 'last_checkin < \"4 hours ago\"'|/usr/bin/grep -Ev virt-who"
+
+team_linux::nonrepopkgs_exclude: 'gpg-pubkey|katello-ca-consumer-.*.cak-bz.local|puppet-agent|openvox-agent|ds_agent|zabbix-release|qualys-'

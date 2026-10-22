@@ -1,0 +1,11 @@
+---
+team_linux::joinad: false
+team_linux::ipaclient: true
+team_linux::rsyslogsize: '2500G'
+
+#team_linux::local0_filter:
+#  - 'Oracle Audit'
+#  - 'Deep Security Manager'
+#  - 'Deep Security Agent'
+
+#team_linux::qualysthreads: '7'

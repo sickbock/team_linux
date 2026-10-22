@@ -1,0 +1,32 @@
+---
+team_linux::accountdata:
+  podman:
+    password: >
+      ENC[PKCS7,MIIB6wYJKoZIhvcNAQcDoIIB3DCCAdgCAQAxggEhMIIBHQIBAD
+      AFMAACAQEwDQYJKoZIhvcNAQEBBQAEggEAMTrKCcSMxoPO92/FUpNyxCdj6q
+      nYwoDd5nCFX8aper5v+dsONuVXzEIxIWe3sQLkR3YikwXhVmJ18eKQl0kfyd
+      BHeduqteyTV5vBXsht9uwEYGCXa0XvAVzxUjgcsnGZ6Zfd1UsdxcLRgzrocS
+      6dxqy7cxyXD8X8VmtwSUntxc2BdMktHFwyJcroqMoJejf7Kxb6aMkM4Psk/0
+      HWtePZdivhMvFIzCPEhF6R1IWJPwV1ODAq7Dd2APqkeGteHi7SpXIZ1eFLcv
+      VIZ/dlM/7riHS0hzaZaCCLsuxJUJMYP1jxI//yNUEBBV3KAzeL9u3azhE7Zc
+      RzWqwnNjCbyYmnLDCBrQYJKoZIhvcNAQcBMB0GCWCGSAFlAwQBKgQQ/pKBmR
+      /2/UD3G8oySLufhICBgIm+FIg+OiCQ20eYwUjvB+dvwEPV41H7jc59OftZTI
+      4Ry3MoSb0WbZzCzazhRNY4xxAXG+/WQse0LiUWXBVTxFg0obgMvVP5gIL3VY
+      eF7a2NxGv7Bdc4akp6QdYLr6ATNlxptGLSoiZi8rbxkPBkFeUzNklO9/VkZN
+      sqLZxmmOjs]
+
+  otcc:
+    password: >
+      ENC[PKCS7,MIIB6wYJKoZIhvcNAQcDoIIB3DCCAdgCAQAxggEhMIIBHQIBAD
+      AFMAACAQEwDQYJKoZIhvcNAQEBBQAEggEA6ikdXPr5H+5U98v3hjFTq9FNwQ
+      Ssh0LY5lP0E9dtzx27bzLf1Yf6YvBrL/DteFP4GaWlL9YSGFUQEx+I3Wn48g
+      ZFDTwv99f/QFJ4NcWLSCMZ7XPrJhf036ZRKrxffkMX5Myj95oWs8iLPo3/44
+      9uignBGrW15uCrxS25W4C4xVEs2C9URSbEfPHnKVfiWkysaSqC0hIUFZ6jyv
+      ud1wXQz72ExwnJlTByfSrO/W259emBwGivoRO6Jk5L9k5nB4TlDkokxr+nMc
+      OQn3paUroQWfsdMFyCNEwSMmxgcUY+7Dxoe8aQkoqdtRSl/Xty2IAlZ+zWyF
+      xw6D2V81SHmlGbUjCBrQYJKoZIhvcNAQcBMB0GCWCGSAFlAwQBKgQQqVEn5w
+      qrE4HGpFkjI1hyyYCBgFM93xN5jvWkxNqPNN0xjpFQ3XIfnYXoWcdnwbRSIh
+      5z2A8EPLqbLc7CTraRtYWc1YRLiMODcnbBMkh0Ql3sjMfLsrBpQfW4/D0IHA
+      mS2XglLjClWtNbd1Xa14G2I4bD9iWxCLYNwGZGT26N1i5hy05ku7yi9iMM/6
+      7gR5qc+yRv]
+

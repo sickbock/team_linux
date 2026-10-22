@@ -1,0 +1,218 @@
+#!/bin/bash
+
+BASEDIR=/root/scripts/create-host-collections
+PROGNAME=$(basename $0)
+allhosts=allhosts.txt
+inventory=inventory
+
+
+#=================================
+error_exit() {
+  echo
+  echo "${1:-"Unknown Error"}" 1>&2
+  exit 1
+}
+#==================================
+recreate_host_collection() {
+for host in $1
+do
+hcid=`hammer --output csv host-collection list | grep ",${1}," | awk -F, '{print $1}'`
+ if [ "$hcid" != "" ] ; then
+  hammer host-collection delete --id ${hcid} > /dev/null 2>&1 || error_exit "Error deleting host-collection ${1}"
+ else
+   echo "$1 bestaat niet als host collection"
+ fi
+
+# recreate host-collection
+
+hammer host-collection create --name ${1} --organization "CAK"  > /dev/null 2>&1 || error_exit "Error creating host-collection ${1}"
+done
+}
+# ===================================
+# check if we are in the right place
+cd $BASEDIR > /dev/null 2>&1 || error_exit "Basedir $BASEDIR doesnt exist..where are we..."
+
+
+# retreive a list of all hosts with id's from satellite
+hammer --output csv host list --thin yes > $allhosts || error_exit "error retreiving all id's from satellite"
+
+# retreive all exclusions from git 
+##  just clone the whole repo for now
+rm -rvf patching && git clone https://git.cak-bz.local/admeimmers/patching.git || error_exit "cannot retreive exclusions from git"
+
+
+# create host-collections for all lists in the patching exception folder.
+# we also remove the old one if it exists, so we dont have any old entries hanging around. (more easy then check if every host already exists in the collection.
+create_exclude_collections() {
+
+for y in `ls -1 patching/exceptions/`
+do
+hcid=`hammer --output csv host-collection list | grep ",${y}," | awk -F, '{print $1}'`
+ if [ "$hcid" != "" ] ; then
+  hammer host-collection delete --id ${hcid} > /dev/null 2>&1 || error_exit "Error deleting host-collection ${y}"
+ else 
+   echo "$y bestaat niet als host collection"
+ fi
+
+
+# recreate host-collection
+hammer host-collection create --name ${y} --organization "CAK"  > /dev/null 2>&1 || error_exit "Error creating host-collection ${y}"
+
+
+####### fill the host-collection with data
+
+for host in `cat patching/exceptions/$y | awk '{print $1}'`
+do
+hostid="`grep $host $allhosts | awk -F, '{print $1}'`"
+  if [ "$hostid" != "" ] ; then
+token="$hostid"
+  combined="${combined}${combined:+,}$token"
+  else
+    echo "host $host not found in Satellite"
+  fi
+done
+
+hammer host-collection add-host --host-ids ${combined} --name $y --organization "CAK" > /dev/null 2>&1
+# || error_exit "Error adding host ${host} into host-collection ${y}"
+echo $combined
+unset combined
+
+done
+}
+
+create_AP_hosts(){
+#########################
+# first lets recreate the host-collection
+recreate_host_collection AP.hosts
+
+# create a host-collection without all exceptions for ACC en PRD
+
+for y in `ls -1 patching/exceptions/`; do EXCLUDES_TEMP="$EXCLUDES_TEMP `echo -n "and not host_collection = $y"`"; done
+
+EXCLUDES="not dummy $EXCLUDES_TEMP"
+EXECUTE="hammer --output csv host list --thin yes --search \"lifecycle_environment = Productie or lifecycle_environment = Acceptatie $EXCLUDES\""
+# 
+
+for host in `eval $EXECUTE | awk -F, '{print $2}' | grep -v ^Name`
+do
+hostid="`grep $host $allhosts | awk -F, '{print $1}'`"
+  if [ "$hostid" != "" ] ; then
+    token="$hostid"
+    combined="${combined}${combined:+,}$token"
+  else
+    echo "host $host not found in Satellite"
+  fi
+done
+    hammer host-collection add-host --host-ids ${combined} --name AP.hosts --organization "CAK" > /dev/null 2>&1 || error_exit "Error adding host ${host} into host-collection AP.hosts"
+echo $combined
+unset combined
+unset EXCLUDES_TEMP
+unset EXCLUDES
+unset EXECUTE
+}
+create_OT_hosts() {
+############################
+# first lets recreate the host-collection
+recreate_host_collection OT.hosts
+
+# create a host-collection without all exceptions for ONT en TEST
+
+for y in `ls -1 patching/exceptions/`; do EXCLUDES_TEMP="$EXCLUDES_TEMP `echo -n "and not host_collection = $y"`"; done
+
+EXCLUDES="not dummy $EXCLUDES_TEMP"
+EXECUTE="hammer --output csv host list --thin yes --search \"lifecycle_environment = Ontwikkeling or lifecycle_environment = Test $EXCLUDES\""
+# 
+eval $EXECUTE | awk -F, '{print $2}'
+
+for host in `eval $EXECUTE | awk -F, '{print $2}' | grep -v ^Name`
+do
+hostid="`grep $host $allhosts | awk -F, '{print $1}'`"
+  if [ "$hostid" != "" ] ; then
+    token="$hostid"
+    combined="${combined}${combined:+,}$token"
+  else
+    echo "host $host not found in Satellite"
+  fi
+done
+    hammer host-collection add-host --host-ids ${combined} --name OT.hosts --organization "CAK" > /dev/null 2>&1 || error_exit "Error adding host ${host} into host-collection AP.hosts"
+echo $combined
+unset combined
+unset EXCLUDES_TEMP
+unset EXCLUDES
+unset EXECUTE
+}
+
+exit_action () {
+  echo "${1}"
+  exit 9
+}
+
+create_inventory() {
+# Now we create one inventory file for ansible
+cd $BASEDIR 
+test -e $inventory && rm $inventory
+echo "#`date`" >> $inventory
+
+for y in `hammer --output csv host-collection list | awk -F, '{print $2}' | grep -v Name`
+do
+  echo "[$y]" >> $inventory
+    for host in `hammer --output csv host-collection hosts --name $y --organization "CAK" | egrep -v '^ID|Name' | awk -F, '{print $2}'`
+    do
+      echo $host >> $inventory
+    done
+  echo >> $inventory
+done
+
+# also add the puppetroles we defined in the enc's on the puppetserver
+#disabled because it seems to be unused (20230705)
+#ssh -i ansible-beheer_id_rsa  ansible-beheer@puppet.cak-bz.local "sudo /root/bin/puppet_rollen.sh" >> $inventory
+
+# now we push the new inventory
+
+test -d inventories && rm -rf inventories
+ssh-agent bash -c 'ssh-add ./ansible-beheer_id_rsa ; git clone git@git.cak-bz.local:awx-teamlinux/inventories.git'
+#ssh-agent bash -c 'ssh-add /root/.ssh/admeimmers.id_rsa ; git clone git@git.cak-bz.local:awx-teamlinux/inventories.git'
+# ssh-agent bash -c 'ssh-add /root/.ssh/admeimmers.id_rsa ; git pull git@git.cak-bz.local:awx-teamlinux/inventories.git' || exit_action "unable to clone repo inventories"
+cd inventories && cp ../inventory patching-hostcollections
+git commit -am "updated patching-hostcollections via create-host-collections.sh on satellite"
+#ssh-agent bash -c 'ssh-add /root/.ssh/admeimmers.id_rsa ; git push' || exit_action "unable to push inventory"
+ssh-agent bash -c 'ssh-add ../ansible-beheer_id_rsa ; git push' || exit_action "unable to push inventory"
+
+}
+
+# Update The inventories on the AWX box
+awx_update() {
+
+#### "named_url": "/api/v2/projects/inventories -  awx-teamlinux%2Finventories.git++Linuxteam
+curl -k -H "Authorization: Bearer BCdx8GnVVjkbFozUrH2dNkdSOr8ZmY" -X POST https://awx.cak-bz.local/api/v2/projects/38/update/ > /dev/null 2>&1 
+sleep 6
+
+#### "Update Project 'awx-teamlinux/inventories.git' in AAP:awx-teamlinux/inventories.gi://aapcontrol.cak-bz.local/#/projects/60/details"
+curl -k -H "Authorization: Bearer r1q4bcyq0bzh1tmLIUmfQOnFTbJakt" -X POST https://aapcontrol.cak-bz.local/api/v2/projects/60/update/ > /dev/null 2>&1 
+
+#### it seems AAP/AWX needs som time to finish the Git synchronization jobs 
+#sleep 120
+sleep 6
+
+#### Now we can update the inventory with the above source
+
+##### named_url": "/api/v2/inventory_sources/patching exceptions %2F host_collections++Patching Inventories++Linuxteam/
+curl -k -H "Authorization: Bearer BCdx8GnVVjkbFozUrH2dNkdSOr8ZmY" -X POST https://awx.cak-bz.local/api/v2/inventory_sources/29/update/ > /dev/null 2>&1  || exit_action "Error starting the inventory update on awx"
+
+sleep 6
+
+#### "Update source for inventory 'Patching awx-teamlinux/inventories' in AAP: https://aapcontrol.cak-bz.local/#/inventories/inventory/39/details"
+curl -k -H 'Authorization: Bearer r1q4bcyq0bzh1tmLIUmfQOnFTbJakt' -X POST https://aapcontrol.cak-bz.local/api/v2/inventories/39/update_inventory_sources/ > /dev/null 2>&1 || exit_action "Error starting the inventory update on AAP"
+
+sleep 6
+}
+
+create_exclude_collections
+create_AP_hosts
+create_OT_hosts
+create_inventory
+awx_update
+
+# Give AAP some time ... 
+sleep 60
+

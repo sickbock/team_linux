@@ -1,0 +1,32 @@
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Provides:          Automator Production Server wrapper
+# Required-Start:
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      S 0 1 6
+# Short-Description: This service manages the opspserver daemon
+# Description:       Production Server is a very scalable solution for scheduling jobs.
+### END INIT INFO
+
+PSERVER=<%= @mpdata %>/PServer_10510/bin/pserver.service
+[[ -x ${PSERVER} ]] || { echo "${PSERVER} not found" ; exit 1 ; }
+
+case $1 in
+  start)
+    /usr/bin/su - <%= @mpowner %> -s /bin/bash -c "${PSERVER} start"
+    ;;
+  stop)
+    /usr/bin/su - <%= @mpowner %> -s /bin/bash -c "${PSERVER} stop"
+    ;;
+  status)
+    /usr/bin/su - <%= @mpowner %> -s /bin/bash -c "${PSERVER} status"
+    ;;
+  restart)
+    /usr/bin/su - <%= @mpowner %> -s /bin/bash -c "${PSERVER} stop"
+    sleep 1
+    /usr/bin/su - <%= @mpowner %> -s /bin/bash -c "${PSERVER} start"
+    ;;
+esac
+

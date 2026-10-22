@@ -1,0 +1,6 @@
+---
+team_linux::repartitionrhel7boot: true
+team_linux::installdsa: true
+
+team_linux::installdsa: false
+

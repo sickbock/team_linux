@@ -1,0 +1,305 @@
+#!/bin/bash
+
+function execLog() {
+   echo "=========================================================================================================" >> $LOG
+   echo "$(date '+%Y-%m-%d %H:%M:%S') : $1" >> $LOG
+   echo "---------------------------------------------------------------------------------------------------------" >> $LOG
+   eval "$1"  >> $LOG 2>&1
+   error=$?
+   echo "---------------------------------------------------------------------------------------------------------" >> $LOG
+   if [ $error -eq 0 ]; then
+     echo "SUCCESS (exit code $error)" >> $LOG
+   else
+     echo "ERROR (exit code $error)" >> $LOG
+   fi
+   echo "=========================================================================================================" >> $LOG
+   echo >> $LOG
+   return $error
+}
+
+EXITERROR () {
+{ echo "${MSG}"; exit 9 ; }
+}
+
+
+### Set hostname fqdn ###
+SHNAME=`hostname -s`
+if [ "$SHNAME" == "satellite" ]; then
+  echo "refuse execute provisioning script on satellite server, aborting"
+  exit 1
+fi
+
+#FQDN=`nslookup $SHNAME|grep Name|awk '{print $2}'`
+FQDN=$(getent hosts $(hostname -i)|awk '{print $2}')
+hostnamectl set-hostname $FQDN
+###
+
+LOG=/var/log/preinstall$$.log
+
+#o# Regenerate hosts keys ###
+rm -rf /etc/ssh/ssh_host_*
+service sshd restart
+### Regenerate hosts keys ###
+
+### cleanup just 2 be sure ###
+rm -rf /etc/yum.repos.d/pe_repo.repo
+rm -rf /etc/yum.repos.d/puppet.repo
+dnf remove puppet-agent puppet -y
+dnf clean all
+rm -rf /var/cache/dnf/*
+rm -rf /var/lib/dnf/*
+rm -rf /etc/puppet*
+### cleanup just 2 be sure ###
+
+### disable auditing during provisioning ###
+### it will be ensure => running by puppet ###
+### after provisioning finishes ###
+service auditd stop
+systemctl disable auditd
+
+### set provisioning state before running Puppet ###
+mkdir -p /var/lib/provisioning
+chmod 755 /var/lib/provisioning
+echo "install" > /var/lib/provisioning/state
+chmod 644 /var/lib/provisioning/state
+
+case ${FQDN} in
+  clno*)
+    PUPPENV=ontwikkeling
+    OTAP_ENV=O
+    ACTIVATION_KEY="RHEL8-${OTAP_ENV}"
+    ;;
+  clnt*)
+    PUPPENV=test
+    OTAP_ENV=T
+    ACTIVATION_KEY="RHEL8-${OTAP_ENV}"
+    ;;
+  clna*)
+    PUPPENV=acceptatie
+    OTAP_ENV=A
+    ACTIVATION_KEY="RHEL8-${OTAP_ENV}"
+    ;;
+  clnp*)
+    PUPPENV=productie
+    OTAP_ENV=P
+    ACTIVATION_KEY="RHEL8-${OTAP_ENV}"
+    ;;  
+  *)
+    PUPPENV=ontwikkeling
+    echo "invalid hostname: ${FQDN} or DNS/network config wrong"
+    echo "failed_invalid_hostname" > /var/lib/provisioning/state
+    exit 1
+    ;;
+esac
+
+
+#touch /var/lib/prelink/force
+#/etc/cron.daily/prelink
+
+execLog "dnf -y erase \"katello-*\""
+execLog "dnf -y erase cloud-init"
+execLog "rm -f /etc/sudoers.d/90-cloud-init-users"
+execLog "/usr/sbin/userdel -r cloud-user"
+
+execLog "dnf -y install http://clnp33509.cak-bz.local/pub/katello-ca-consumer-latest.noarch.rpm"
+#execLog "egrep 'hostname.*satellite' /etc/rhsm/rhsm.conf" || MSG="Failed to configure Satellite via katello-ca-consumer package" EXITERROR
+execLog "egrep 'hostname.*clnp33509' /etc/rhsm/rhsm.conf" || MSG="Failed to configure Satellite via katello-ca-consumer package" EXITERROR
+
+#execLog "rpm -Uvh http://satellite.prd.sysmgt.func.cak-bz.local/pub/katello-ca-consumer-latest.noarch.rpm" || exit 1
+
+##execLog "dnf -y upgrade http://satellite.cak-bz.local/pub/katello-ca-consumer-latest.noarch.rpm" || exit 1
+##execLog "dnf --disablerepo rhel-8-for-x86_64-appstream-rpms -y upgrade http://satellite.cak-bz.local/pub/katello-ca-consumer-latest.noarch.rpm" || exit 1
+##execLog "dnf -y upgrade http://satellite.cak-bz.local/pub/katello-ca-consumer-latest.noarch.rpm" || exit 1
+##execLog "dnf -y install http://satellite.cak-bz.local/pub/katello-ca-consumer-latest.noarch.rpm" || exit 1
+
+##execLog "curl -O http://satellite.cak-bz.local/pub/katello-ca-consumer-latest.noarch.rpm"
+##execLog "dnf -y install katello-ca-consumer-latest.noarch.rpm" || exit 1
+
+execLog "subscription-manager register --org=\"CAK\" --activationkey=\"${ACTIVATION_KEY}\" --force"
+execLog "subscription-manager attach --auto"
+execLog "subscription-manager refresh"
+execLog "subscription-manager status"
+execLog "subscription-manager list"
+execLog "subscription-manager repos"
+
+# https://access.redhat.com/articles/simple-content-access
+for i in  $(subscription-manager repos --list|awk '/Repo ID/ {print $3}') ; do subscription-manager repos --enable ${i}  ; done |tee -a ${LOG} 2>&1
+# but disable some repos:
+execLog "subscription-manager repos --disable CAK_PostgreSQL_PostgreSQL_14_RHEL8"
+
+# enable latest available Satellite tools repository (OBSOLETE SINCE SAT version~6.13}
+#execLog "SATTOOLS=$(subscription-manager repos --list |awk '/satellite-tools/ {print $3}')"
+#execLog "subscription-manager repos --enable ${SATTOOLS}" || MSG="Enabling Satellite Tools repo failed" EXITERROR
+
+#execLog "dnf --disablerepo rhel-8-for-x86_64-appstream-rpms -y install katello-agent"
+
+# Install at least katello-host-tools from Satellite tools repository
+execLog "dnf -y install katello-host-tools"
+#execLog "dnf -y install katello-agent"
+#execLog "katello-package-upload" (obsolete/unavailable in RHEL8)
+execLog "dnf -y install insights-client"
+#execLog "/usr/bin/redhat-access-insights --register"
+execLog "/usr/bin/insights-client --register"
+
+#execLog "wget --no-check-certificate https://puppet.cak-bz.local:8140/packages/current/install.bash"
+
+# install 'at' and 'puppet-agent'
+#execLog "dnf -y install at puppet-agent" || MSG="Puppet installation failed" EXITERROR
+curl -k https://clnp33171.cak-bz.local:8140/packages/current/install.bash 2>&1 |bash 2>&1 | tee -a ${LOG} 2>&1
+#test# curl -k https://clno03135.cak-bz.local:8140/packages/current/install.bash 2>&1 |bash 2>&1 | tee -a ${LOG} 2>&1
+
+sleep 2
+/usr/local/bin/puppet config set runtimeout 7200 --section main
+
+# don't upgrade puppet-agent from Satellite repo's
+#/usr/bin/sed -i 's/^exclude=.*/exclude=puppet-agent/' /etc/dnf/dnf.conf
+# at this stage, file still only contains a [main] section w/o exclude:
+echo 'exclude=puppet-agent aziot-identity-service' >> /etc/dnf/dnf.conf
+
+execLog "/usr/local/bin/puppet agent --disable Install"
+
+# create link for convenience
+execLog "mkdir /root/bin; ln -s /opt/puppetlabs/bin/puppet /root/bin/puppet"
+
+#execLog "dnf --disablerepo rhel-8-for-x86_64-appstream-rpms -y install at puppet-agent"
+#execLog "chmod +x install.bash"
+#execLog "/bin/sh ./install.bash"
+#execLog "rm -rf install.bash"
+
+#execLog "cat << EOF > /etc/puppetlabs/puppet/puppet.conf
+#[main]
+#server = clnp32862.cak-bz.local
+#certname = ${FQDN}
+#usecacheonfailure = false
+#
+#[agent]
+#report = true
+#graph = true
+#strict_variables = true
+#environment = ${PUPPENV}
+#runinterval = 900
+#EOF
+#"
+
+execLog "dnf -y remove perl*" 
+execLog "dnf -y install at strace" 
+
+execLog "lvresize /dev/rhel/var -L +1G -r"
+
+
+#Create patchreboot script
+cat <<EOF > /root/bin/patchreboot
+#!/usr/bin/bash
+# description: patch and reboot the system after first VRA triggered reboot
+/usr/bin/echo "\$0 / \$@ / \$(date): Start upgrade" | /usr/bin/tee -a /var/log/patchreboot.log
+/usr/bin/dnf -y upgrade | tee -a /var/log/patchreboot.log
+
+/usr/bin/sleep 1
+
+# run puppet after next boot
+/usr/bin/systemctl enable runpuppet.service | /usr/bin/tee -a /var/log/patchreboot.log
+
+
+/usr/bin/sleep 1
+
+/usr/bin/echo "\$0 / \$@ / \$(date): dit script hoort eenmalig, uitsluitend bij inrichting gestart te worden" | /usr/bin/tee -a /var/log/patchreboot.log
+/usr/bin/sleep 1 
+/usr/bin/systemctl disable patchreboot.service | tee -a /var/log/patchreboot.log
+/usr/sbin/reboot | tee -a /var/log/patchreboot.log
+EOF
+
+chmod 544 /root/bin/patchreboot
+
+#Create patchreboot.service
+cat << EOF > /usr/lib/systemd/system/patchreboot.service
+[Unit]
+Description=Patch and reboot and enable runpuppet service
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/root/bin/patchreboot
+TimeoutSec=900
+
+[Install]
+WantedBy=multi-user.target
+
+EOF
+
+execLog "systemctl enable patchreboot.service"
+
+#already done#mkdir /root/bin
+cat << EOF > /root/bin/runpuppet
+#!/usr/bin/bash
+/usr/local/bin/puppet agent --disable Install
+#pstree -laps >> /var/log/runpuppetoninstall.log
+
+#disable patchreboot.service
+systemctl disable patchreboot.service
+
+echo "Start puppet run 1" >> /var/log/runpuppetoninstall.log
+/usr/local/bin/puppet agent --enable; /usr/local/bin/puppet agent -t --logdest /var/log/runpuppetoninstall.log ; /usr/local/bin/puppet agent --disable Install
+sleep 10
+echo "Start puppet run 2" >> /var/log/runpuppetoninstall.log
+/usr/local/bin/puppet agent --enable; /usr/local/bin/puppet agent -t --logdest /var/log/runpuppetoninstall.log ; /usr/local/bin/puppet agent --disable Install
+sleep 10
+echo "Start puppet run 3" >> /var/log/runpuppetoninstall.log
+/usr/local/bin/puppet agent --enable; /usr/local/bin/puppet agent -t --logdest /var/log/runpuppetoninstall.log ; /usr/local/bin/puppet agent --disable Install
+sleep 10
+echo "Start puppet run 4" >> /var/log/runpuppetoninstall.log
+/usr/local/bin/puppet agent --enable; /usr/local/bin/puppet agent -t --logdest /var/log/runpuppetoninstall.log ; /usr/local/bin/puppet agent --disable Install
+sleep 10
+echo "Start puppet run 5" >> /var/log/runpuppetoninstall.log
+/usr/local/bin/puppet agent --enable; /usr/local/bin/puppet agent -t --logdest /var/log/runpuppetoninstall.log ; /usr/local/bin/puppet agent --disable Install
+sleep 1
+echo "Start puppet run 6" >> /var/log/runpuppetoninstall.log
+/usr/local/bin/puppet agent --enable; /usr/local/bin/puppet agent -t --logdest /var/log/runpuppetoninstall.log ; /usr/local/bin/puppet agent --disable Install
+sleep 1
+echo "Start puppet run 7" >> /var/log/runpuppetoninstall.log
+/usr/local/bin/puppet agent --enable; /usr/local/bin/puppet agent -t --logdest /var/log/runpuppetoninstall.log ; /usr/local/bin/puppet agent --disable Install
+sleep 1
+echo "Start puppet run 8" >> /var/log/runpuppetoninstall.log
+/usr/local/bin/puppet agent --enable; /usr/local/bin/puppet agent -t --logdest /var/log/runpuppetoninstall.log ; /usr/local/bin/puppet agent --disable Install
+sleep 1
+echo "Start puppet run 9" >> /var/log/runpuppetoninstall.log
+/usr/local/bin/puppet agent --enable; /usr/local/bin/puppet agent -t --logdest /var/log/runpuppetoninstall.log ; /usr/local/bin/puppet agent --disable Install
+sleep 1
+echo "Start puppet run 10" >> /var/log/runpuppetoninstall.log
+/usr/local/bin/puppet agent --enable; /usr/local/bin/puppet agent -t --logdest /var/log/runpuppetoninstall.log ; /usr/local/bin/puppet agent --disable Install
+sleep 1
+echo "Start puppet run 11" >> /var/log/runpuppetoninstall.log
+/usr/local/bin/puppet agent --enable; /usr/local/bin/puppet agent -t --logdest /var/log/runpuppetoninstall.log ; /usr/local/bin/puppet agent --disable Install
+sleep 1
+echo "Start puppet run 12" >> /var/log/runpuppetoninstall.log
+/usr/local/bin/puppet agent --enable; /usr/local/bin/puppet agent -t --logdest /var/log/runpuppetoninstall.log ; /usr/local/bin/puppet agent --disable Install
+sleep 1
+echo "Start last post-installation puppet run" >> /var/log/runpuppetoninstall.log
+/usr/local/bin/puppet agent --enable; /usr/local/bin/puppet agent -t --logdest /var/log/runpuppetoninstall.log 
+
+/sbin/setenforce 1
+
+systemctl disable runpuppet.service
+systemctl start rpcbind.service
+
+EOF
+
+execLog "chmod 544 /root/bin/runpuppet"
+execLog "chcon -R -t bin_t /root/bin"
+
+cat << EOF > /usr/lib/systemd/system/runpuppet.service
+[Unit]
+Description=Run Puppet after boot
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/root/bin/runpuppet
+
+[Install]
+WantedBy=multi-user.target
+
+EOF
+
+# Exit 0 seems a signal picked up by VRA to reboot the system and declare the system installation complete?
+exit 0
+

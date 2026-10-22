@@ -1,0 +1,6 @@
+---
+team_linux::installdsa: false
+
+team_linux::zabbixlogsize: '450G'
+
+#team_linux::qualysthreads: '5'

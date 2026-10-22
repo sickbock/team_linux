@@ -1,0 +1,10 @@
+team_linux::ssh_groups:
+  - 'g-mg-l-splunk-tb-p'
+
+team_linux::sudocmd:
+  '%g-mg-l-splunk-tb-p':
+    'root':
+      - '/bin/systemctl start splunk-service'
+      - '/bin/systemctl restart splunk-service'
+      - '/bin/systemctl stop splunk-service'
+      - '/bin/systemctl status splunk-service'

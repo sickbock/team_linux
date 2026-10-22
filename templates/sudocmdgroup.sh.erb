@@ -1,0 +1,171 @@
+#!/usr/bin/bash
+# ipa_sudocmd_add.sh — Add IPA sudo commands from a file, skipping existing ones.
+#
+# Usage: ./ipa_sudocmd_add.sh <commands_file>
+#
+# The commands file should contain one command per line, e.g.:
+#   /usr/bin/vim
+#   /usr/bin/less
+#   /sbin/reboot
+#
+# Blank lines and lines starting with # are ignored.
+set -euo pipefail
+# ── Helpers ──────────────────────────────────────────────────────────────────
+usage() {
+    echo "Usage: $0 <commands_file>" >&2
+    exit 1
+}
+log()  { echo "[INFO]  $*"; }
+warn() { echo "[WARN]  $*" >&2; }
+err()  { echo "[ERROR] $*" >&2; }
+# ── Kerberos ticket check ─────────────────────────────────────────────────────
+# Verify a valid (non-expired) TGT exists; if not, prompt for a username
+# (defaulting to the current OS user) and run kinit against CAK-BZ.LOCAL.
+# If the user types a full principal (user@REALM), the @REALM part is stripped
+# and CAK-BZ.LOCAL is always appended.
+ensure_kerberos_ticket() {
+    if klist -s 2>/dev/null; then
+        log "Kerberos ticket found ($(klist 2>/dev/null | awk '/^Default principal:/{print $3}'))."
+        return 0
+    fi
+    warn "No valid Kerberos ticket found. Running kinit..."
+    local realm="CAK-BZ.LOCAL"
+    # Prompt for username, offering the current OS user as the default.
+    local input_user=""
+    read -r -p "[INPUT] Kerberos username [${USER}]: " input_user </dev/tty
+    local username="${input_user:-$USER}"
+    # Strip any realm the user may have typed themselves to avoid doubling.
+    local bare_user="${username%@*}"
+    local principal="${bare_user}@${realm}"
+    log "Running: kinit $principal"
+    if ! kinit "$principal"; then
+        err "kinit failed for '$principal'. Please obtain a Kerberos ticket manually and re-run the script."
+        exit 1
+    fi
+    # Confirm the ticket is now valid.
+    if ! klist -s 2>/dev/null; then
+        err "Ticket still not valid after kinit. Aborting."
+        exit 1
+    fi
+    log "Kerberos ticket obtained successfully."
+}
+ensure_kerberos_ticket
+# ── Argument validation ───────────────────────────────────────────────────────
+[[ $# -ne 1 ]] && usage
+COMMANDS_FILE="$1"
+if [[ ! -f "$COMMANDS_FILE" ]]; then
+    err "File not found: $COMMANDS_FILE"
+    exit 1
+fi
+# ── Build in-memory cache of existing sudo commands ──────────────────────────
+# Uses an associative array (requires bash 4+).
+declare -A EXISTING_CMDS=()
+log "Loading existing IPA sudo commands into cache…"
+while IFS= read -r line; do
+    # ipa sudocmd-find outputs lines like:  Sudo Command: /usr/bin/vim
+    if [[ "$line" =~ ^[[:space:]]*Sudo\ Command:[[:space:]]*(.+)$ ]]; then
+        cmd="${BASH_REMATCH[1]}"
+        EXISTING_CMDS["$cmd"]=1
+    fi
+done < <(ipa sudocmd-find --all 2>/dev/null || true)
+log "Cache built: ${#EXISTING_CMDS[@]} existing command(s) found."
+# ── Derive sudo command group name from filename ──────────────────────────────
+# Use the basename without extension as the group name, e.g.:
+#   /etc/ipa/editors.txt  →  editors
+GROUP_NAME="$(basename "$COMMANDS_FILE")"
+GROUP_NAME="${GROUP_NAME%.*}"   # strip extension
+log "Target sudocmd group: '$GROUP_NAME'"
+# ── Process each command from the file ───────────────────────────────────────
+added=0
+skipped=0
+failed=0
+# Collect every valid command from the file (both new and pre-existing) so we
+# can add them all to the group in one pass afterwards.
+declare -a GROUP_MEMBERS=()
+while IFS= read -r cmd || [[ -n "$cmd" ]]; do
+    # Strip leading/trailing whitespace
+    cmd="${cmd#"${cmd%%[![:space:]]*}"}"
+    cmd="${cmd%"${cmd##*[![:space:]]}"}"
+    # Skip blank lines and comments
+    [[ -z "$cmd" || "$cmd" == \#* ]] && continue
+    if [[ -n "${EXISTING_CMDS[$cmd]+_}" ]]; then
+        log "SKIP  (already exists): $cmd"
+        (( skipped++ )) || true
+        GROUP_MEMBERS+=("$cmd")
+        continue
+    fi
+    log "ADD   $cmd"
+    ipa_output=$(ipa sudocmd-add "$cmd" --desc="$cmd" 2>&1) && ipa_rc=0 || ipa_rc=$?
+    if [[ $ipa_rc -eq 0 ]]; then
+        EXISTING_CMDS["$cmd"]=1
+        (( added++ )) || true
+        GROUP_MEMBERS+=("$cmd")
+    elif echo "$ipa_output" | grep -qi "already exists"; then
+        warn "Already exists (will still add to group): $cmd"
+        (( skipped++ )) || true
+        GROUP_MEMBERS+=("$cmd")
+    else
+        err "Failed to add: $cmd"
+        err "  IPA says: $ipa_output"
+        (( failed++ )) || true
+    fi
+done < "$COMMANDS_FILE"
+# ── Ensure the sudocmd group exists ──────────────────────────────────────────
+log "Checking if sudocmd group '$GROUP_NAME' exists…"
+if ipa sudocmdgroup-show "$GROUP_NAME" > /dev/null 2>&1; then
+    log "Group '$GROUP_NAME' already exists."
+else
+    log "Group '$GROUP_NAME' not found — creating it…"
+    if ipa sudocmdgroup-add "$GROUP_NAME" --desc="$GROUP_NAME" > /dev/null 2>&1; then
+        log "Group '$GROUP_NAME' created."
+    else
+        err "Failed to create sudocmd group '$GROUP_NAME'. Aborting."
+        exit 1
+    fi
+fi
+# ── Add all commands to the group ────────────────────────────────────────────
+# Build the cache of commands already in the group so we don't add duplicates.
+declare -A GROUP_CMD_CACHE=()
+while IFS= read -r line; do
+    if [[ "$line" =~ ^[[:space:]]*Member\ Sudo\ commands:[[:space:]]*(.+)$ ]]; then
+        # The field may list multiple commands comma-separated on one line.
+        IFS=',' read -ra members <<< "${BASH_REMATCH[1]}"
+        for m in "${members[@]}"; do
+            m="${m#"${m%%[![:space:]]*}"}"
+            m="${m%"${m##*[![:space:]]}"}"
+            [[ -n "$m" ]] && GROUP_CMD_CACHE["$m"]=1
+        done
+    fi
+done < <(ipa sudocmdgroup-show "$GROUP_NAME" --all 2>/dev/null || true)
+log "Group cache built: ${#GROUP_CMD_CACHE[@]} command(s) already in group."
+group_added=0
+group_skipped=0
+for cmd in "${GROUP_MEMBERS[@]}"; do
+    if [[ -n "${GROUP_CMD_CACHE[$cmd]+_}" ]]; then
+        log "GROUP SKIP (already member): $cmd"
+        (( group_skipped++ )) || true
+        continue
+    fi
+    log "GROUP ADD $cmd → $GROUP_NAME"
+    if ipa sudocmdgroup-add-member "$GROUP_NAME" --sudocmds="$cmd" > /dev/null 2>&1; then
+        GROUP_CMD_CACHE["$cmd"]=1
+        (( group_added++ )) || true
+    else
+        err "Failed to add '$cmd' to group '$GROUP_NAME'."
+        (( failed++ )) || true
+    fi
+done
+# ── Summary ───────────────────────────────────────────────────────────────────
+echo
+echo "══════════════════════════════════════════════"
+echo "  Done."
+echo "  Commands added:          $added"
+echo "  Commands skipped:        $skipped"
+echo "  Commands failed:         $failed"
+echo "  ──────────────────────────────────────────"
+echo "  Group:                   $GROUP_NAME"
+echo "  Added to group:          $group_added"
+echo "  Already in group:        $group_skipped"
+echo "══════════════════════════════════════════════"
+[[ $failed -gt 0 ]] && exit 1 || exit 0
+

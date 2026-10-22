@@ -1,0 +1,14 @@
+---
+team_linux::accountdata:
+  rsa-web:
+    admin-access:
+      - '%g-mg-l-network-admins-p'
+
+team_linux::ssh_groups:
+  - 'g-mg-l-network-admins-p'
+
+team_linux::sudocmd:
+  '%g-mg-l-network-admins-p':
+    'root':
+      - '/bin/su - root'
+

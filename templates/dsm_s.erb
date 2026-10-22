@@ -1,0 +1,34 @@
+#  systemd configuration for Deep Security Manager to be installed in:
+#  	/opt/dsm
+#
+# This file is managed by Puppet
+ 
+[Unit]
+Description=Start Deep Security manager
+Documentation=https://help.deepsecurity.trendmicro.com/20_0/on-premise/manager-install-silent.html
+ConditionPathExists=/opt/dsm/dsm_s
+After=syslog.target network.target
+ 
+[Service]
+Type=forking
+User=dsmadmin
+Group=dsmadmin
+ExecStart=/opt/dsm/dsm_s start
+ExecReload=/opt/dsm/dsm_s restart
+ExecStop=/opt/dsm/dsm_s stop
+StandardOutput=syslog
+#LimitNOFILE=65536 # hard limit already 262144
+LimitNPROC=8192
+TimeoutStartSec=50
+RestartSec=5s
+Restart=on-failure
+Environment="HTTP_PROXY=http://<%= @httpproxyserver %>/"
+Environment="HTTPS_PROXY=https://<%= @httpproxyserver %>/"
+Environment="http_proxy=http://<%= @httpproxyserver %>/"
+Environment="https_proxy=https://<%= @httpproxyserver %>/"
+Environment="NO_PROXY='127.0.0.1,localhost,.cak-bz.local,.ipaprod.hetcak.nl'"
+Environment="no_proxy='127.0.0.1,localhost,.cak-bz.local,.ipaprod.hetcak.nl'"
+ 
+[Install]
+WantedBy=multi-user.target
+

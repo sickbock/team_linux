@@ -1,0 +1,31 @@
+---
+team_linux::localserviceaccounts:
+  novledir:
+  novlwww:
+  novlua:
+
+team_linux::ssh_groups:
+  - 'g-mg-as-4'
+# - 'g-mg-iam-idt-ap'
+
+team_linux::sudocmd:
+  'novledir':
+    root:
+      - '/bin/systemctl start novell-tomcat8-service'
+      - '/bin/systemctl restart novell-tomcat8-service'
+      - '/bin/systemctl stop novell-tomcat8-service'
+      - '/bin/systemctl status novell-tomcat8-service'
+      - '/bin/systemctl start novell-edirectory-service'
+      - '/bin/systemctl restart novell-edirectory-service'
+      - '/bin/systemctl stop novell-edirectory-service'
+      - '/bin/systemctl status novell-edirectory-service'
+      - '/bin/systemctl start novell-dirxmlremote-service'
+      - '/bin/systemctl restart novell-dirxmlremote-service'
+      - '/bin/systemctl stop novell-dirxmlremote-service'
+      - '/bin/systemctl status novell-dirxmlremote-service'
+
+# Temporary personal access:
+team_linux::ssh_access:
+  - 'admrtuit'
+
+team_linux::nonrepopkgs_exclude: 'katello-ca-consumer-.*.cak-bz.local|gpg-pubkey|zabbix-agent|puppet-agent|openvox-agent|splunkforwarder|novell|netiq|nici64|edirectory-rhel|identityconsole|patterns-edirectory|ds_agent|qualys-'

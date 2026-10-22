@@ -1,0 +1,2 @@
+---
+team_linux::nonrepopkgs_exclude: 'gpg-pubkey|zabbix-agent|katello-ca-consumer-.*.cak-bz.local|puppet-agent|openvox-agent|splunkforwarder|emcdbappagent|powerprotect-agentsvc|compat-libstdc\+\+-296|ds_agent|openmotif21|xorg-x11-libs-compat|ddboostfs|qualys-'

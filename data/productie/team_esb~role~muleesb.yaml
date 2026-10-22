@@ -1,0 +1,16 @@
+---
+team_linux::ssh_groups:
+  - 'g-mg-mule-beheerders'
+
+team_linux::team_esb_sudouser: 'sa-mule-esb-wp'
+team_linux::opt_application_user: 'sa-mule-esb-wp'
+team_linux::opt_application_group: 'gl-integratie-mft-prd'
+
+team_linux::sudocmd:
+  'sa-mule-esb-wp':
+    root:
+      - '/usr/bin/nc'
+  '%g-mg-mule-beheerders':
+    root:
+      - '/usr/sbin/tcpdump'
+

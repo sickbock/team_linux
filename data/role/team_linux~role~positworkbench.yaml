@@ -1,0 +1,26 @@
+---
+team_linux::homedisk: '/dev/disk/by-path/pci-0000:03:00.0-scsi-0:0:1:0'
+team_linux::positdata: '/dev/disk/by-path/pci-0000:03:00.0-scsi-0:0:2:0'
+team_linux::positwbuser: 'posit'
+team_linux::positwbgroup: 'pg-mg-posit-users@ipaprod.hetcak.nl'
+team_linux::localserviceaccounts:
+  posit:
+
+team_linux::packages:
+  binutils:
+  git:
+  java-21-openjdk:
+
+team_linux::rsyslog_msgfilter:
+  ignore_ldap_client: "$msg contains 'KDC has no support for encryption type. Unable to create GSSAPI-encrypted LDAP connection.'"
+
+team_linux::auditd_rules:
+  'posit_executables':
+    - '# filter out executables known to have issues / wrong policy'
+    - '-a exclude,always -F exe=/usr/lib/rstudio-server/bin/rserver-monitor'
+    - '-a exclude,always -F exe=/usr/lib/rstudio-server/bin/rsession'
+
+team_linux::nonrepopkgs_exclude: 'gpg-pubkey|katello-ca-consumer-.*.cak-bz.local|puppet-agent|openvox-agent|zabbix-agent2|ds_agent|splunk|epel-release|google-chrome-stable|rstudio-server|oracle-instantclient-basic|oracle-instantclient-sqlplus|rstudio-drivers|rstudio-workbench|R-|python-3|qualys-'
+
+team_linux::selinuxconf: 'disabed'
+

@@ -1,0 +1,112 @@
+---
+team_linux::root_login: true
+
+team_linux::root_localservice_keys:
+    - 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOxCKZwR+CFJ4YQx+Vc/SE9QotchiTQqvC1xddnWDpIc root@clnp33446'
+
+team_linux::root_login: true
+team_linux::pgsqlvers: '15'
+team_linux::szpgsqldata: '35G'
+team_linux::szpgsqlbackup: '55G'
+
+team_linux::psqlnetaccess: true
+team_linux::psqlmaxconnections: 1024
+
+postgresql::server::ip_mask_deny_postgres_user: '0.0.0.0/32'
+
+postgresql::server::role:
+  'aapgwdb':
+  'aapctrldb':
+  'aaphubdb':
+  'aapedadb':
+
+postgresql::server::db:
+  'aapgwdb':
+    'user': 'aapgwdb'
+  'aapctrldb':
+    'user': 'aapctrldb'
+  'aaphubdb':
+    'user': 'aaphubdb'
+  'aapedadb':
+    'user': 'aapedadb'
+
+postgresql::server::pg_hba_rule:
+  'allow_aapgw1':
+    description: 'PostgreSQL access from clnp33444 172.25.194.51/32 to aapgwdb'
+    type: 'host'
+    database: 'aapgwdb,postgres'
+    user: 'aapgwdb,postgres'
+    address: '172.25.194.51/32'
+    auth_method: 'md5'
+  'allow_aapgw2':
+    description: 'PostgreSQL access from clnp33445 172.25.194.53/32 to aapgwdb'
+    type: 'host'
+    database: 'aapgwdb,postgres'
+    user: 'aapgwdb,postgres'
+    address: '172.25.194.53/32'
+    auth_method: 'md5'
+  'allow_aapctrl1':
+    description: 'PostgreSQL access from clnp33446 172.25.194.58/32 to aapctrldb'
+    type: 'host'
+    database: 'aapctrldb,postgres'
+    user: 'aapctrldb,postgres'
+    address: '172.25.194.58/32'
+    auth_method: 'md5'
+  'allow_aapctrl2':
+    description: 'PostgreSQL access from clnp33447 172.25.194.56/32 to aapctrldb'
+    type: 'host'
+    database: 'aapctrldb,postgres'
+    user: 'aapctrldb,postgres'
+    address: '172.25.194.56/32'
+    auth_method: 'md5'
+  'allow_aaphub1':
+    description: 'PostgreSQL access from clnp33451 172.25.194.59/32 to aaphubdb'
+    type: 'host'
+    database: 'aaphubdb,postgres'
+    user: 'aaphubdb,postgres'
+    address: '172.25.194.59/32'
+    auth_method: 'md5'
+  'allow_aaphub2':
+    description: 'PostgreSQL access from clnp33452 172.25.194.54/23 to aaphubdb'
+    type: 'host'
+    database: 'aaphubdb,postgres'
+    user: 'aaphubdb,postgres'
+    address: '172.25.194.54/23'
+    auth_method: 'md5'
+  'allow_aapeda1':
+    description: 'PostgreSQL access from clnp33453 172.25.194.50/32 to aapedadb'
+    type: 'host'
+    database: 'aapedadb,postgres'
+    user: 'aapedadb,postgres'
+    address: '172.25.194.50/32'
+    auth_method: 'md5'
+  'allow_aapeda2':
+    description: 'PostgreSQL access from clnp33454 172.25.194.49/32 to aapedadb'
+    type: 'host'
+    database: 'aapedadb,postgres'
+    user: 'aapedadb,postgres'
+    address: '172.25.194.49/32'
+    auth_method: 'md5'
+  'allow_zabbix': # test / monitor from Zabbix clnp33337.cak-bz.local
+    description: 'PostgreSQL access from Zabbix 172.25.168.2/32 for awx'
+    type: 'host'
+    database: 'aapgwdb,aapctrldb,aaphubdb,aapedadb,postgres'
+    user: 'aapgwdb,aapctrldb,aaphubdb,aapedadb,postgres'
+    address: '172.25.168.2/32'
+    auth_method: 'md5'
+  'allow_localhost': # 
+    description: 'PostgreSQL access from Zabbix 127.0.0.1/32'
+    type: 'host'
+    database: 'aapgwdb,aapctrldb,aaphubdb,aapedadb,postgres'
+    user: 'aapgwdb,aapctrldb,aaphubdb,aapedadb,postgres'
+    address: '127.0.0.1/32'
+    auth_method: 'md5'
+  'allow_clnp33513': # 
+    description: 'PostgreSQL access from Zabbix 172.25.194.41/32'
+    type: 'host'
+    database: 'aapgwdb,aapctrldb,aaphubdb,aapedadb,postgres'
+    user: 'aapgwdb,aapctrldb,aaphubdb,aapedadb,postgres'
+    address: '172.25.194.41/32'
+    auth_method: 'md5'
+
+#team_linux::qualysthreads: '5'

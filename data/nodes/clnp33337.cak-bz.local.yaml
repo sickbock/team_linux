@@ -1,0 +1,29 @@
+---
+team_linux::zabbix_agent: 'zabbix-agent2'
+team_linux::zabbix_ip: '127.0.0.1'
+team_linux::zabbix_url: 'localhost'
+team_linux::zabbix_server_startpollers: '20'
+
+postgresql::server::ip_mask_deny_postgres_user: '0.0.0.0/32'
+postgresql::server::ip_mask_allow_all_users: '0.0.0.0/0'
+team_linux::zabbix_server_cache: '512M'
+team_linux::zabbix_server_startpollers: '15'
+
+team_linux::zabbixlogsize: '500G'
+
+# https://ask.puppet.com/question/32413/how-to-create-multiple-postgresql-databases-via-hiera/
+postgresql::server::db:
+  'zabbix':
+    user: 'zabbix'
+  
+postgresql::server::pg_hba_rule:
+  'allow_zabbix':
+    description: 'PostgreSQL access from 127.0.0.1'
+    type: 'host'
+    database: 'zabbix'
+    user: 'zabbix'
+    address: '127.0.0.1/24'
+    auth_method: 'md5'
+
+team_linux::installdsa: false
+

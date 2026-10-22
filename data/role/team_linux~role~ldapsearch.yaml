@@ -1,0 +1,31 @@
+---
+team_linux::joinad: true
+team_linux::ipaclient: false
+team_linux::root_login: true
+
+team_linux::specialmessage: |
+  ############################################################################
+  #
+  #                  _    ____                          _     
+  #                 / \  |  _ \ ___  ___  __ _ _ __ ___| |__  
+  #                / _ \ | | | / __|/ _ \/ _` | '__/ __| '_ \ 
+  #               / ___ \| |_| \__ \  __/ (_| | | | (__| | | |
+  #              /_/   \_\____/|___/\___|\__,_|_|  \___|_| |_|
+  #                                                           
+  # Leden van AD group opvragen e.d.
+  #    getent group <adgroupname>
+  # Voor hulp:
+  #    adsearch -h
+  #
+  ############################################################################
+
+
+team_linux::localserviceaccounts:
+  ansible-beheer:
+
+team_linux::accountdata:
+  ansible-beheer:
+    customsudorules:
+      - '(root) NOPASSWD: ALL'
+
+

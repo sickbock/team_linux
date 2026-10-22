@@ -1,0 +1,28 @@
+#################################################################################
+# Alleen gebruiken als je  een bepaalde OTAP node in dev_admjpoutre wil testen
+#################################################################################
+# re-define AD account & group for Mule/ESB:
+#team_linux::usergroups:
+#  gl-integratie-mft-tst:
+
+#team_linux::localserviceaccounts:
+#  sa-mule-esb-wt:
+
+#################################################################################
+# test mule T-machine in dev_admjpoutre door variablen voor T in te vullen:
+#################################################################################
+team_linux::ssh_groups:
+  - 'g-mg-mule-ontwikkelaars'
+  - 'g-mg-mule-beheerders'
+
+#team_linux::team_esb_sudouser: 'sa-mule-esb-wt'
+team_linux::opt_application_user: 'sa-mule-esb-wt'
+team_linux::opt_application_group: 'gl-integratie-mft-tst'
+
+team_linux::sudocmd:
+  'sa-mule-esb-wt':
+    root:
+      - '/usr/bin/nc'
+
+team_linux::ssh_access:
+  - 'sa-mule-esb-wt'

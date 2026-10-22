@@ -1,0 +1,13 @@
+---
+#team_linux::usergroups:
+#  eessi:
+#
+#team_linux::localserviceaccounts:
+#  ap:
+
+team_linux::ssh_forwarding: 'yes'
+team_linux::packages:
+  firefox:
+  xorg-x11-xauth:
+ 
+team_linux::ignorepipewire: true

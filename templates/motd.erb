@@ -1,0 +1,40 @@
+<% Puppet::Parser::Functions.autoloader.loadall -%>
+
+Welcome to [1m[36m<%= @facts['networking']['hostname'] %>[0m.
+
+Ongeautoriseerde toegang tot deze computer is strafbaar. Tevens is het
+e-mail en internetprotocol van toepassing. Dit protocol is af te halen
+bij HR-Support.
+
+<% if @cmdb['division'] -%>
+division      [1m[36m<%= @cmdb['division'] %>[0m
+<% end -%>
+<% if @cmdb['applications'] -%>
+<% @cmdb['applications'].each do |name| -%>
+application   [1m[36m<%= name %>[0m
+<% end -%>
+<% end -%>
+
+otap          [1m[36m<%= @environment %>[0m
+fqdn          [1m[36m<%= @facts['networking']['fqdn'] %>[0m
+puppet role   [1m[36m<%= @cmdb['role'] %>[0m
+<% if @cmdb['params'] -%>
+<% @cmdb['params'].each_pair do |name,val| -%>
+  <%= scope.function_sprintf(['%-13s', name]) %> [1m[36m<%= val %>[0m
+<% end -%>
+<% end -%>
+
+OS            [1m[36m<%= @facts['operatingsystem'] %> <%= @facts['operatingsystemrelease'] %>[0m
+CPU           [1m[36m<%= @facts['processorcount'] %> x <%= @facts['processor0'] %>[0m
+RAM           [1m[36m<%= @facts['memorysize'] %>[0m
+
+incidents       [1m[36mservicecenter@hetcak.nl[0m
+<% if @cmdb['tab'] -%>
+tech app beheer [1m[36m<%= @cmdb['tab'] %>@hetcak.nl[0m
+<% end -%>
+node managed by [1m[36m<%= @linuxbeheer_mail %>[0m
+
+<% if @specialmessage -%>
+<%= @specialmessage %>
+<%# Retire the FAQ "Be sure to read the CAK Linux faq, type 'cakfaq' at the prompt." %>
+<% end -%>

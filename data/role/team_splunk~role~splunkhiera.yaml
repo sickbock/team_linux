@@ -1,0 +1,2 @@
+---
+team_linux::nonrepopkgs_exclude: 'katello-ca-consumer-.*.cak-bz.local|gpg-pubkey|zabbix-agent|puppet-agent|openvox-agent|splunk|ds_agent|qualys-'

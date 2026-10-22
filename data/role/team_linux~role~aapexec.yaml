@@ -1,0 +1,11 @@
+---
+# remove 'podman* containerd.io runc' from team_linux::dnf_exclude
+#  overruling it in the node yaml during install/upgrade:
+team_linux::dnf_exclude: 'puppet-agent podman* ansible* containers-common containerd.io runc skopeo'
+#team_linux::cryptopolicies: 'LEGACY'
+#team_linux::root_login: true # required during installation
+
+team_linux::installqlsagent: false
+
+team_linux::localserviceaccounts:
+  awx:

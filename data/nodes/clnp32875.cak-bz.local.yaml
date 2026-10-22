@@ -1,0 +1,12 @@
+---
+team_linux::joinad: false
+team_linux::ipaclient: true
+team_linux::installdsa: false
+
+team_linux::accountdata:
+  admmpost:
+    level: 'mortal'
+    sshkeys:
+      - 'blabla'
+
+team_linux::installqlsagent: false

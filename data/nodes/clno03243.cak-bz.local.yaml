@@ -1,0 +1,7 @@
+---
+#team_linux::auditd_rules:
+#  'linux_000000':
+#    - '# host specific rules that need to come first (e.g. never before always)'
+#    - '-a exit,never -F dir=/opt/novell/eDirectory/lib64/ -k exclude'
+#    - '-a exit,never -F dir=/run/systemd/ask-password-block/ -k exclude'
+

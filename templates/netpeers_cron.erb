@@ -1,0 +1,4 @@
+# Puppet Name: gather_netpeers_svg
+*/45 * * * * apache /usr/local/bin/netpeers_gather.sh > /dev/null 2>&1
+# Puppet Name: create_html
+*/30 * * * * apache /usr/local/bin/netpeers_gen_html.sh > /dev/null 2>&1

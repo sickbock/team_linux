@@ -1,0 +1,19 @@
+---
+team_linux::ssh_groups:
+  - 'g-mg-mule-beheerders'
+
+team_linux::team_esb_sudouser: 'sa-mule-aq-wp'
+team_linux::opt_application_user: 'sa-mule-aq-wp'
+team_linux::opt_application_group: 'g-mg-mule-beheerders'
+
+team_linux::sudocmd:
+  'sa-mule-aq-wp':
+    root:
+      - '/bin/systemctl start activemq'
+      - '/bin/systemctl stop activemq'
+      - '/bin/systemctl status activemq'
+      - '/sbin/service activemq start'
+      - '/sbin/service activemq restart'
+      - '/sbin/service activemq stop'
+      - '/sbin/service activemq status'
+

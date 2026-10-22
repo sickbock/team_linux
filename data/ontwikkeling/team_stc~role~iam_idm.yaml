@@ -1,0 +1,18 @@
+team_linux::ssh_groups:
+  - 'g-mg-iam-ont-idm'
+
+team_linux::sudocmd:
+  '%g-mg-iam-ont-idm':
+    'root':
+      - '/bin/systemctl start novell-tomcat8-service'
+      - '/bin/systemctl restart novell-tomcat8-service'
+      - '/bin/systemctl stop novell-tomcat8-service'
+      - '/bin/systemctl status novell-tomcat8-service'
+      - '/bin/systemctl start novell-edirectory-service'
+      - '/bin/systemctl restart novell-edirectory-service'
+      - '/bin/systemctl stop novell-edirectory-service'
+      - '/bin/systemctl status novell-edirectory-service'
+      - '/bin/systemctl start novell-dirxmlremote-service'
+      - '/bin/systemctl restart novell-dirxmlremote-service'
+      - '/bin/systemctl stop novell-dirxmlremote-service'
+      - '/bin/systemctl status novell-dirxmlremote-service'

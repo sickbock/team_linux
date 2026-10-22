@@ -1,0 +1,24 @@
+---
+# moved to role:
+#team_linux::ssh_groups:
+#  - '%g-mg-l-sonarqube-p'
+
+# no individual host access
+#linuxaccess::accounts:
+#  admmarcel:
+#    ensure: present
+
+#team_linux::ssh_access:
+#  - 'admmarcel'
+
+
+team_linux::sudocmd:
+  '%g-mg-l-sonarqube-p':
+     root:
+       - '/usr/bin/systemctl start sonarqube'
+       - '/usr/bin/systemctl stop sonarqube'
+       - '/usr/bin/systemctl reload sonarqube'
+       - '/usr/bin/systemctl restart sonarqube'
+       - '/usr/bin/systemctl status sonarqube'
+
+#team_linux::installdsa: false

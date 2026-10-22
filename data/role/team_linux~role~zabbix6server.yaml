@@ -1,0 +1,17 @@
+---
+team_linux::packages:
+  nmap:
+  nmap-ncat:
+
+team_linux::accountdata:
+  zabbix:
+    sudorules:
+      'root':
+        tags: 'NOPASSWD:SETENV:'
+        commands:
+          - '/usr/bin/nmap *'
+
+team_linux::auditd_msgfilter:
+  skip_zabbix_server_pgsql:  '-a exclude,always -F exe=/usr/sbin/zabbix_server_pgsql -F msgtype=SYSCALL'
+  skip_zabbix_server_krb5:  '-a exclude,always -F subj_type=zabbix_t -F msgtype=AVC'
+

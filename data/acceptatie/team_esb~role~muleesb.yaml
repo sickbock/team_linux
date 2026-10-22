@@ -1,0 +1,12 @@
+team_linux::ssh_groups:
+  - 'g-mg-mule-ontwikkelaars'
+  - 'g-mg-mule-beheerders'
+
+team_linux::team_esb_sudouser: 'sa-mule-esb-wa'
+team_linux::opt_application_user: 'sa-mule-esb-wa'
+team_linux::opt_application_group: 'gl-integratie-mft-acc'
+
+team_linux::sudocmd:
+  'sa-mule-esb-wa':
+    root:
+      - '/usr/bin/nc'

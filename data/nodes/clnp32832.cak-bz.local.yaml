@@ -1,0 +1,4 @@
+---
+team_linux::joinad: false
+team_linux::ipaclient: true
+

@@ -1,0 +1,3 @@
+---
+#team_linux::zabbix_ip: '172.25.168.83,172.25.168.2'
+#team_linux::zabbix_url: 'clnp33337.cak-bz.local'

@@ -1,0 +1,24 @@
+#!/bin/bash
+#
+# satellite_virt-who_check.sh
+#
+# Intended to run hourly via cron. Runs `virt-who -s` with a 120 second
+# timeout and always writes its output to the status file, overwriting
+# whatever was there before. The file is never removed.
+#
+# If the command does not complete within 120 seconds, the file will
+# instead contain "TIMEOUT of virt-who -s".
+ 
+set -u
+ 
+STATUS_FILE="/var/tmp/sat_virtwho_works.status"
+TIMEOUT_SECONDS=120
+ 
+OUTPUT=$(timeout "${TIMEOUT_SECONDS}" virt-who -s 2>&1)
+EXIT_CODE=$?
+ 
+if [[ ${EXIT_CODE} -eq 124 ]]; then
+    echo "TIMEOUT of virt-who -s" > "${STATUS_FILE}"
+else
+    echo "${OUTPUT}" > "${STATUS_FILE}"
+fi

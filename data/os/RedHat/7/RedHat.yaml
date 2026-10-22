@@ -1,0 +1,50 @@
+---
+team_linux::nonrepopkgs_exclude: 'gpg-pubkey|katello-ca-consumer-.*.cak-bz.local|ds_agent|puppet-agent|openvox-agent|zabbix-agent2|qualys-'
+team_linux::rsyslog_msgfilter:
+  skip_pam_end_null_handle  : "$msg contains 'PAM pam_end: NULL pam handle passed'"
+  skip_bug_1830736_timestamp: "$msg contains 'Failed to parse calendar specification, ignoring'"
+  skip_bug_1830736_message: "$msg contains 'mdcheck_start.timer lacks value setting. Refusing.'"
+  skip_systemdudevd_device: "$msg contains 'could not read from ./sys/module'"
+  skip_systemd_nonsense1 : "$msg contains 'Failed to create session: Start job for unit user-0.slice failed with '"
+  skip_systemd_nonsense2 : "$msg contains 'Failed to connect to API bus: Connection refused'"
+  skip_credential_cache: "$msg contains 'No credentials cache found (filename: /tmp/krb5cc'"
+  skip_vmware_piix4_smbus: "$msg contains 'piix4_smbus 0000:00:07.3: SMBus Host Controller not enabled!'" # Eventually blacklist i2c_piix4 kernel module https://stackoverflow.com/questions/56835839/host-smbus-controller-is-not-enabled
+
+
+team_linux::auditd_rules:
+  'linux_000003': 
+    - '# do not audit succesull time adjustment by user ntp'
+    - '-A never,exit -F arch=b64 -S adjtimex -F uid=ntp -F success=1'
+    - '-A never,exit -F arch=b32 -S adjtimex -F uid=ntp -F success=1'
+# need to override, stime is no longer a system call since rhel 7
+#  'linux_000010': # a bit silly, eventually replace by time out of sync Zabbix?
+#    - '# audit time changes'
+#    - '-a always,exit -F arch=b32 -S adjtimex -S settimeofday -k LOG_timeadjust'
+#    - '-a always,exit -F arch=b64 -S adjtimex -S settimeofday -k LOG_timeadjust'
+#    - '-a always,exit -F arch=b32 -S clock_settime -F a0=0x0 -k LOG_timeadjust'
+#    - '-a always,exit -F arch=b64 -S clock_settime -F a0=0x0 -k LOG_timeadjust'
+
+# some basic commands (like fuser) are not installed by default on RHEL7
+team_linux::packages:
+  psmisc:
+  screen:
+
+team_linux::repartitionrhel7boot: true
+team_linux::installdsa: true
+#team_linux::ds_agent_version: '20.0.0-6313.el7'
+#team_linux::ds_agent_version: '20.0.0-1337.el7'
+
+
+#team_linux::zabbix_old: true # obsolete when profile zabbix_agent.pp obsolete!
+
+team_linux::accountdata:
+  oracle:
+    ulimits:
+      - 'oracle hard nofile 65536'
+      - 'oracle soft nofile 65536'
+      - 'oracle hard nproc 16384'
+      - 'oracle soft nproc 2047'
+      - 'oracle hard stack 16384'
+      - 'oracle soft stack 10240'
+
+

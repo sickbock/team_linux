@@ -1,0 +1,63 @@
+---
+team_linux::root_login: true
+team_linux::pgsqlvers: '13'
+team_linux::szpgsqldata: '35G'
+team_linux::szpgsqlbackup: '55G'
+
+team_linux::psqlnetaccess: true
+team_linux::psqlmaxconnections: 1024
+
+team_linux::remove_line_data_dir: true
+
+postgresql::server::ip_mask_deny_postgres_user: '0.0.0.0/32'
+
+# Stop Puppet trying to change passwords (unknown why) during ervery run
+postgresql::server::role:
+  'awx':
+    update_password: "false"
+  'automationedacontroller':
+    update_password: false
+
+postgresql::server::db:
+  'awx':
+    user: 'awx'
+  'automationedacontroller':
+    user: 'automationedacontroller'
+  
+postgresql::server::pg_hba_rule:
+  'allow_awx':
+    description: 'PostgreSQL access from 172.25.168.91/32 for awx'
+    type: 'host'
+    database: 'awx'
+    user: 'awx'
+    address: '172.25.168.91/32'
+    auth_method: 'md5'
+  'allow_awxeda':
+    description: 'PostgreSQL access from 172.25.168.108/32 for awx'
+    type: 'host'
+    database: 'awx'
+    user: 'awx'
+    address: '172.25.168.108/32'
+    auth_method: 'md5'
+  'allow_automationedacontroller':
+    description: 'PostgreSQL access from 172.25.168.108/32 for automationedacontroller'
+    type: 'host'
+    database: 'automationedacontroller'
+    user: 'automationedacontroller'
+    address: '172.25.168.108/32'
+    auth_method: 'md5'
+  'allow_automationedacontroller_ctrl':
+    description: 'PostgreSQL access from 172.25.168.91/32 for automationedacontroller'
+    type: 'host'
+    database: 'automationedacontroller'
+    user: 'automationedacontroller'
+    address: '172.25.168.91/32'
+    auth_method: 'md5'
+  'allow_testawx': # test / monitor from Zabbix clnp33337.cak-bz.local
+    description: 'PostgreSQL access from Zabbix 172.25.168.2/32 for awx'
+    type: 'host'
+    database: 'awx'
+    user: 'awx'
+    address: '172.25.168.2/32'
+    auth_method: 'md5'
+

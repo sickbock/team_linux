@@ -1,0 +1,34 @@
+---
+version: 5
+defaults:
+  datadir: data
+  data_hash: yaml_data
+
+hierarchy:
+  - name: 'Team Linux Yaml backend'
+    paths:
+      - "nodes/%{trusted.certname}.yaml"
+      - "%{::environment}/%{facts.roleconfig}.yaml"
+      - "%{::environment}.yaml"
+      - "role/%{facts.roleconfig}.yaml"
+      - "os/%{facts.os.family}/%{facts.os.release.major}/%{::environment}.yaml" # for W2206 0802, W2208 0491, ..
+      - "os/%{facts.os.family}/%{facts.os.release.major}/%{facts.os.family}.yaml"
+      - "os/%{facts.os.family}/%{facts.os.family}.yaml"
+      - "%{::environment}/%{team}.yaml" # useful for OTAP change like W2008 1223
+      - "team/%{team}.yaml"
+      - 'accounts_to_disable.yaml'
+      - 'legacy.yaml' # to be removed after obsoleting native use AD
+      - 'common.yaml'
+  - name: "Linux secret data"
+    lookup_key: eyaml_lookup_key  # eyaml backend
+    datadir: data
+    #glob: "data/*.eyaml"
+    paths: 
+      - "nodes/%{trusted.certname}.eyaml"
+      - "%{::environment}.eyaml"
+      - 'params.eyaml'
+    options:
+      pkcs7_private_key: "/data/eyaml/private_key.pkcs7.pem"
+      pkcs7_public_key: "/data/eyaml/public_key.pkcs7.pem"
+      #pkcs7_private_key: "/etc/puppetlabs/eyaml/private_key.pkcs7.pem"
+      #pkcs7_public_key: "/etc/puppetlabs/eyaml/public_key.pkcs7.pem"

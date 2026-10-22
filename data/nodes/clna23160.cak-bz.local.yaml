@@ -1,0 +1,4 @@
+---
+team_linux::szpgsqldata: '260G'
+team_linux::szpgsqlbackup: '70G'
+team_linux::pgsqlcrontab: "#33 03 * * * root /usr/local/bin/pg_backup_rotated.sh >/var/log/pgbackup.log 2>&1\n"

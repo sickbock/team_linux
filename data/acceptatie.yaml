@@ -1,0 +1,8 @@
+---
+team_linux::puppetagent_runinterval: '1200'
+team_linux::mghostsf: true
+team_linux::resolveconf: true
+
+#team_linux::ds_agent_version: '20.0.0-1337.el8'
+#team_linux::installdsa: true
+

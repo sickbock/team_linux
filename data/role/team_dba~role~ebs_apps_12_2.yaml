@@ -1,0 +1,11 @@
+---
+team_linux::dns_attempts: 5
+team_linux::dns_timeout: 5
+
+# skip broken AD-client errors - systems to be replaced anyway?
+team_linux::rsyslog_msgfilter:
+  skip_AD_keytab1: "$msg contains 'Failed to initialize credentials using keytab'"
+  skip_AD_keytab2: "$msg contains 'Unable to create GSSAPI-encrypted LDAP connection'"
+
+team_linux::nonrepopkgs_exclude: 'gpg-pubkey|zabbix-agent|katello-ca-consumer-.*.cak-bz.local|puppet-agent|openvox-agent|splunkforwarder|compat-libstdc\+\+-296|openmotif21|xorg-x11-libs-compat|ds_agent|ds_agent|ddboostfs|qualys-'
+

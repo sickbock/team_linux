@@ -1,0 +1,9 @@
+---
+team_linux::accountdata:
+  sonar:
+    admin-access:
+      - '%g-mg-l-sonarqube-p'
+
+team_linux::ssh_groups:
+  - 'g-mg-l-sonarqube-p'
+

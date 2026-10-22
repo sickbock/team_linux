@@ -1,0 +1,34 @@
+---
+#team_linux::root_login: true
+#team_linux::nonrepopkgs_exclude: 'gpg-pubkey|katello-ca-consumer-.*.cak-bz.local|puppet-agent|openvox-agent|zabbix-agent2|ds_agent|splunk|epel-release|google-chrome-stable|rstudio-server|oracle-instantclient-basic|oracle-instantclient-sqlplus|rstudio-drivers|rstudio-workbench|R-|python-3|qualys-'
+
+#team_linux::profile::netmounts:
+#  mountpoints:
+#    - '/media/posit':
+#  owner: 'admmkorngold@CAK-BZ.LOCAL'
+#  group: 'pg-mg-posit-users@ipaprod.hetcak.nl'
+#  mode: '2770'
+#  mounts:
+#    '/media/posit':
+#       ensure: mounted
+#       fstype: 'cifs'
+#       device:  '//ffsp1011.cak-bz.local/posit_workbench$'
+#       options: 'auto,cache=none,username=SVR-SX-LINUX,domain=cak-bz,password=4EjK75,uid=1500,gid=1500,rw,soft,noserverino,async'
+#team_linux::profile::netmounts:
+#  mountpoints:
+#    - '/media/posit'
+#  owner: 'posit'
+#  group: 'pg-mg-posit-users@ipaprod.hetcak.nl'
+#  mode: '0750'
+#  mounts:
+#    '/media/posit':
+#      ensure:  mounted
+#      fstype:  'nfs'
+#      device:  'ffsp1011.cak-bz.local:/posit_workbench'
+#      options: 'noexec,vers=3,sec=sys'
+
+#team_linux::ssh_forwarding: 'yes'
+
+#clnp33336team_linux::qualysthreads: '5'
+
+#team_linux::selinuxconf: 'disabed'

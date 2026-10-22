@@ -1,0 +1,33 @@
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Provides:          Automator REST Server wrapper
+# Required-Start:    
+# Required-Stop:     
+# Default-Start:     2 3 4 5
+# Default-Stop:      S 0 1 6
+# Short-Description: This service manages the server.pyc daemon 
+# Description:       REST Server is a server to provide rest api endpoints to manage subscription features. 
+### END INIT INFO
+
+RSERVER=<%= @mpdata %>/RServer_6000/bin/rserver.service
+[[ -x ${RSERVER} ]] || { echo "${RSERVER} not found" ; exit 1 ; }
+
+case $1 in
+  start)
+    /usr/bin/su - <%= @mpowner %> -s /bin/bash -c "${RSERVER} start"
+    ;;
+  stop)
+    /usr/bin/su - <%= @mpowner %> -s /bin/bash -c "${RSERVER} stop"
+    ;;
+  status)
+    #/usr/bin/su - <%= @mpowner %> -s /bin/bash -c "${RSERVER} status"
+    [[ $(/usr/bin/pgrep -f server.pyc) > 0 ]] && echo "OP Schedule REST Server is running" || echo "OP Schedule REST Server is stopped"
+    ;;
+  restart)
+    /usr/bin/su - <%= @mpowner %> -s /bin/bash -c "${RSERVER} stop"
+    sleep 1
+    /usr/bin/su - <%= @mpowner %> -s /bin/bash -c "${RSERVER} start"
+    ;;
+esac
+

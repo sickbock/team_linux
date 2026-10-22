@@ -1,0 +1,20 @@
+################################################################
+# Former (AD) accounts may still have SSH-keys or home 
+# directories on systems:
+# - Remove these accounts from
+#   - team_linux::sudo_root or
+#   - team_linux::ssh_access
+# Then this profile sshpublickeys.pp wil
+# - remove SSH keys
+# - disable home directory access
+################################################################
+team_linux::accounts2delete:
+  admjanmarten:
+    ensure: absent
+  admnjahangier:
+    ensure: absent
+  admresveld:
+    ensure: absent
+
+#team_linux::localserviceaccounts:
+# maybe ... if we need to remove services?

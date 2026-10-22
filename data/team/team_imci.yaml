@@ -1,0 +1,43 @@
+########################################
+# Default users and groups for the roles
+# belonging to this team
+# WARNING: never leave a parameter empty
+########################################
+#team_linux::usergroups:
+
+#team_linux::localserviceaccounts:
+
+team_linux::team_imci_members:
+  - 'admtim'
+  - 'admroland'
+
+# Sudo user(s) for all nodes administered by the team
+#team_linux::<role>: 
+#  - 'novlua'
+
+# sudo user(s) per node role for the team - if any:
+#team_linux::<role>:
+#  - 'novlua'
+#  - 'root'
+
+# any other mortals with SSH access?
+#team_linux::ssh_access:
+
+# any local accounts that have SSH access?
+#team_linux::ssh_svcaccounts:
+
+
+########################################
+# SSH keys for team_imci, see common.yaml
+########################################
+#team_linux::accountdata:
+#  admtim:
+#    level: 'mortal'
+#    sshkeys:
+#      - 'ssh-rsa ...'
+#  admroland:
+#    level: 'mortal'
+#    sshkeys:
+#      - 'ssh-rsa ...'
+
+

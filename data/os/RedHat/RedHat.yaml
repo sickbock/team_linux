@@ -1,0 +1,130 @@
+---
+team_linux::nonrepopkgs_exclude: 'gpg-pubkey|katello-ca-consumer-.*.cak-bz.local|puppet-agent|openvox-agent|zabbix-agent2|zabbix-agent2-plugin-postgresql|zabbix-agent2-plugin-mongodb|ds_agent|splunk|qualys-'
+################################################################################
+# Upgrade Zabbix agent to zabbix-agent2, add Zabbix 6.0 LTS server
+# Moved to data/common.yaml after completint ghe upgrade
+################################################################################
+
+################################################################################
+# zabbix agent user parameters for RHEL -> obsolete, use Satellite instead
+################################################################################
+#team_linux::zabbix_userparams:
+#  securitypatches  : "sudo yum updateinfo 2>&1 |grep -A1 Updates|(grep 'Security notice(s)' || echo '0 Security notice(s)')| awk '{print $1}'"
+#  licensing        : "sudo /usr/sbin/subscription-manager status | grep '^Overall Status' | awk '{print $3}'"
+
+
+################################################################################
+team_linux::rsyslog_msgfilter:
+################################################################################
+  skip_goferd_reliability_errors: "$msg contains 'gofer.messaging.adapter.proton.reliability:53'"
+  skip_from_qualys_ip: "$msg contains 'from 172.25.168.12'"
+  skip_qualys_illegal_user: "$msg contains 'Authentication failure for illegal user'"
+  skip_admin_login: "$msg contains 'error: PAM: User not known to the underlying authentication module for illegal user admin from'"
+  skip_admin_max: "$msg contains 'error: maximum authentication attempts exceeded for invalid user admin from'"
+  skip_admin_critical: "$msg contains 'error retrieving information about user admin'"
+  skip_user_login: "$msg contains 'error: PAM: User not known to the underlying authentication module for illegal user user from'"
+  skip_user_max: "$msg contains 'error: maximum authentication attempts exceeded for invalid user user from'"
+  skip_user_critical: "$msg contains 'error retrieving information about user user'"
+  skip_factory_login: "$msg contains 'error: PAM: User not known to the underlying authentication module for illegal user factory from'"
+  skip_factory_max: "$msg contains 'error: maximum authentication attempts exceeded for invalid user factory from'"
+  skip_factory_critical: "$msg contains 'error retrieving information about user factory'"
+  skip_USERID_login: "$msg contains 'error: PAM: User not known to the underlying authentication module for illegal user USERID from'"
+  skip_USERID_max: "$msg contains 'error: maximum authentication attempts exceeded for invalid user USERID from'"
+  skip_USERID_critical: "$msg contains 'error retrieving information about user USERID'"
+  skip_userid_login: "$msg contains 'error: PAM: User not known to the underlying authentication module for illegal user userid from'"
+  skip_userid_max: "$msg contains 'error: maximum authentication attempts exceeded for invalid user userid from'"
+  skip_userid_critical: "$msg contains 'error retrieving information about user userid'"
+  skip_zyfwp_login: "$msg contains 'error: PAM: User not known to the underlying authentication module for illegal user zyfwp from'"
+  skip_zyfwp_max: "$msg contains 'error: maximum authentication attempts exceeded for invalid user zyfwp from'"
+  skip_zyfwp_critical: "$msg contains 'error retrieving information about user zyfwp'"
+  skip_sshd_reset: "$msg contains 'fatal: Read from socket failed: Connection reset by peer'"
+  skip_more_qualys_sshd: "$msg contains 'error: kex_exchange_identification: Connection closed by remote host'"
+  skip_more_qualys_reset: "$msg contains 'error: kex_exchange_identification: read: Connection reset by peer'"
+  skip_sssd_revoke: "$msg contains 'credentials have been revoked'"
+  skip_sssd_preauth: "$msg contains 'Preauthentication failed'"
+  skip_pcc_cpufreq: "$msg contains '/sys/module/pcc_cpufreq/initstate'"
+  skip_acpi_cpufreq: "$msg contains '/sys/module/acpi_cpufreq/initstate'"
+  skip_expired_password: "$msg contains 'Password has expired'"
+  dikkevingerskarada: "$msg contains 'error: PAM: Authentication failure for admkloekabino from '"
+  vmwarebug: "$msg contains 'blk_update_request: I/O error, dev '"
+  oracleverlogvuilingpass: "$msg contains 'auth could not identify password for [oracle]'"
+  oracleverlogvuilingsudo: "$msg contains 'sudo:   oracle : command not allowed'"
+  openvast144: "$msg contains '172.24.166.244'"
+  openvast143: "$msg contains '172.24.166.243'"
+  # helaas komen ze van onbekende adressen bij nieuwe scans
+  openvastvdi: "$msg contains '172.24.166.'"
+  openvastincomplete: "$msg contains 'fatal: ssh_packet_get_string: incomplete message [preauth]'"
+  novellaccessmanager: "$msg contains 'Novell Access Manager'"
+  VGAuthService: "$msg contains 'VGAuthService'"
+  irqbalance: "$msg contains 'irqbalance'"
+  splunk_config_fuckup: "$msg contains '/opt/splunk/etc/splunk-launch.conf splunk_os_user'"
+  splunk_svc_fuckup: "$msg contains '/Splunk::Splunk_launch/Augeas'"
+  splunk_splunk_os_user: "$msg contains 'splunk_os_user'"
+  qualys_agent1: "$msg contains 'Failed to establish communication with the Qualys Agent process'"
+  qualys_agent2: "$msg contains 'Not Sending Agent Uninstallation Notification for CP'"
+  qualys_agent3: "$msg contains 'qlsagent : account validation failure, is your account locked?'"
+  qualys_agent4: "$msg contains 'qlsagent : problem with defaults entries'"
+  qualys_agent5: "$msg contains 'pam_unix(sudo:account): Fork failed: Resource temporarily unavailable'"
+  qualys_agent6: "$msg contains '(qualys-cloud-ag) of user 0 dumped core'"
+  qualys_agent7: "$msg contains '(qualys-cloud-ag) of user 2137 dumped core'"
+  qualys_agent8: "$msg contains 'pam_systemd(sudo:session): Failed to create session: Transport endpoint is not connected'"
+  qualys_agent9: "$msg contains 'pam_unix(sudo:account): unix_chkpwd abnormal exit: 1'"
+  qualys_agent10: "$msg contains 'qualys-bpf'"
+  qualys_agent11: "$msg contains 'qlsagent : command not allowed'"
+  qualys_agent12: "$msg contains 'auth could not identify password for [qlsagent]'"
+  qualys_agent13: "$msg contains 'pam_unix(sudo:auth): conversation failed'"
+  qualys_agent14: "$msg contains 'qualys-healthcheck-tool'"
+  qualys_agent15: "$msg contains 'qualys-cep'"
+  deepshit1: "$msg contains 'bmhook'"
+  deepshit2: "$msg contains 'Error receiving audit netlink packet (No buffer space available)'" # https://access.redhat.com/solutions/7058400
+
+# individuele qualys messages with IP
+#  skip_userid_pam: "$msg contains 'error: PAM: Authentication failure for userid from 172.25.168.12'"
+#  skip_USERID_pam: "$msg contains 'error: PAM: Authentication failure for USERID from 172.25.168.12'"
+#  skip_zyfwp_pam: "$msg contains 'error: PAM: Authentication failure for zyfwp from 172.25.168.12'"
+#  skip_root_qualys: "$msg contains 'error: PAM: Authentication failure for root from 172.25.168.12'"
+#  skip_factory_pam: "$msg contains 'error: PAM: Authentication failure for factory from 172.25.168.12'"
+#  skip_user_pam: "$msg contains 'error: PAM: Authentication failure for user from 172.25.168.12'"
+#  skip_admin_pam: "$msg contains 'error: PAM: Authentication failure for admin from 172.25.168.12'"
+#  skip_illegal_pam: "$msg contains 'error: PAM: Authentication failure for illegal user user from 172.25.168.12'"
+#  skip_more_qualys_USERID: "$msg contains 'error: PAM: Authentication failure for illegal user USERID from 172.25.168.12'"
+#  skip_more_qualys_zyfwp: "$msg contains 'error: PAM: Authentication failure for illegal user zyfwp from 172.25.168.12'"
+#  skip_more_qualys_zyfwp: "$msg contains 'error: PAM: Authentication failure for illegal user zyfwp from 172.25.168.12'"
+# individuele messages, zeker met IP, is teveel:
+#  openvastssh: "$msg contains 'hostname=? addr=172.24.166.244 terminal=ssh res=failed'"
+#  openvastuser: "$msg contains 'error: PAM: User not known to the underlying authentication module for illegal user OpenVASVT from 172.24.166.243'"
+#  openvastjndi: "$msg contains 'User not known to the underlying authentication module for illegal user ${jndi from 172.24.166.244'"
+#  openvastvagrant: "$msg contains 'error: PAM: User not known to the underlying authentication module for illegal user vagrant from 172.24.166.243'"
+#  openvastroot: "$msg contains 'error: PAM: Authentication failure for root from 172.24.166.243'"
+#  openvastmsfadmin: "$msg contains 'error: PAM: User not known to the underlying authentication module for illegal user msfadmin from 172.24.166.243'"
+#  openvastskyboxview: "$msg contains 'error: PAM: User not known to the underlying authentication module for illegal user skyboxview from 172.24.166.243'"
+#  openvastTANDBERG: "$msg contains 'error: PAM: User not known to the underlying authentication module for illegal user TANDBERG from 172.24.166.243'"
+#  openvastadmin: "$msg contains 'error: PAM: Authentication failure for admin from 172.24.166.243'"
+#  openvastillegaluser: "$msg contains 'error: PAM: User not known to the underlying authentication module for illegal user rwa from 172.24.166.243'"
+
+#       NOT IN MODULE SCOPE!!!
+################################################################################
+################################################################################
+#  'Syncing Satellite subscriptions': |
+#    When new products are added to the content host in Satellite, these
+#    products may not be visisble even after running autoattach from
+#    Satellite. But
+#
+#      subscription-manager refresh
+#
+#    will force the sync.
+#  'Patching': |
+#    To view applicable updates (with respect to the current content view
+#    on Satellite):
+#
+#      yum updateinfo
+#
+#    To apply patches in the current Satellite content view
+#
+#      yum update
+#
+
+team_linux::netpeer_cron: true
+
+team_linux::packages:
+  yum-utils:
